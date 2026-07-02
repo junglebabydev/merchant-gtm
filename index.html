@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jungle · Merchant Outreach Dashboard</title>
+<style>
+  :root{
+    --bg:#f7f3ea; --card:#ffffff; --ink:#1a1a1a; --muted:#6f6a5e; --line:#e6e0d3;
+    --accent:#2F6B4F; --accent-dark:#24543e; --accent-soft:#e7f0ea;
+    --accent2:#b0692c; --warn:#b7791f; --bad:#c0392b;
+    --chip:#efece2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;background:var(--card);position:sticky;top:0;z-index:5;border-bottom:3px solid var(--accent)}
+  header .brand{display:flex;align-items:center;gap:14px}
+  header .brand img{height:30px;width:auto;display:block}
+  header .brand .divider{width:1px;height:30px;background:var(--line)}
+  header h1{font-size:16px;margin:0;font-weight:700;letter-spacing:-.01em}
+  header .sub{color:var(--muted);font-size:12px;margin-top:2px}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .btn:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+  main{padding:22px 24px;max-width:1180px;margin:0 auto}
+  .banner{padding:10px 14px;border-radius:8px;margin:0 0 18px;font-size:13px}
+  .banner.warn{background:#fdf6e3;border:1px solid #f0e3b8;color:var(--warn)}
+  .banner.err{background:#fdecea;border:1px solid #f5c6c0;color:var(--bad)}
+  .grid{display:grid;gap:14px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .kpi{border-top:3px solid var(--accent);padding-top:14px}
+  .kpi .n{font-size:26px;font-weight:700;color:var(--accent-dark)}
+  .kpi .l{color:var(--muted);font-size:12px;margin-top:2px}
+  .kpi .pct{color:var(--accent);font-size:12px;font-weight:600}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-dark);margin:26px 0 10px;font-weight:700}
+  h2::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--accent);margin-right:8px;vertical-align:middle}
+  .funnel{display:flex;flex-wrap:wrap;gap:10px}
+  .stage{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:12px 14px}
+  .stage .n{font-size:22px;font-weight:700;color:var(--accent-dark)}
+  .stage .l{color:var(--muted);font-size:12px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+  th{background:var(--accent-soft);color:var(--accent-dark);font-weight:600;position:sticky;top:0}
+  tr:last-child td{border-bottom:none}
+  .tick{color:var(--accent);font-weight:700}
+  .dot{color:#cfcabd}
+  .cnt{display:inline-block;min-width:18px;text-align:center;background:var(--accent-soft);color:var(--accent-dark);border-radius:6px;padding:1px 6px;font-size:12px;font-weight:600}
+  .subj{color:var(--muted);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stagechip{display:inline-block;background:var(--accent-soft);color:var(--accent-dark);border-radius:6px;padding:1px 7px;font-size:11px}
+  .muted{color:var(--muted)}
+  .feed{max-height:340px;overflow:auto}
+  .feed .row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .ev{font-weight:600}
+  .ev.opened{color:var(--accent)}.ev.clicked{color:var(--accent2)}.ev.delivered{color:var(--accent-dark)}
+  .ev.bounced,.ev.complained{color:var(--bad)}.ev.sent{color:var(--muted)}
+  .two{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+  @media(max-width:840px){.two{grid-template-columns:1fr}}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .tab{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:8px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  .tab:hover{background:var(--accent-soft)}
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tpl-meta{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px}
+  .tpl-meta .stagechip{background:var(--accent);color:#fff;font-size:12px;padding:3px 9px}
+  .tpl-subject{font-size:15px;font-weight:700;color:var(--ink)}
+  .tpl-body{white-space:pre-wrap;font-size:13.5px;line-height:1.65;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .ph{background:var(--accent-soft);color:var(--accent-dark);border-radius:4px;padding:0 4px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;font-weight:600}
+  .tpl-sig{color:var(--muted);font-size:12px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .catmap{margin-top:14px}
+  .catmap summary{cursor:pointer;color:var(--accent-dark);font-size:12.5px;font-weight:600}
+  .catmap table{margin-top:8px}
+  .catmap th,.catmap td{font-size:12.5px;padding:6px 10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="jungle-logo.png" alt="Jungle" />
+    <div class="divider"></div>
+    <div>
+      <h1>Merchant Outreach — June</h1>
+      <div class="sub" id="sub">Loading…</div>
+    </div>
+  </div>
+  <button class="btn" onclick="load()">↻ Refresh</button>
+</header>
+<main>
+  <div id="banner"></div>
+
+  <div class="grid kpis" id="kpis"></div>
+
+  <h2>Sequence funnel <span class="muted" style="text-transform:none;letter-spacing:0">— from merchant_crm</span></h2>
+  <div class="funnel" id="funnel"></div>
+
+  <div class="two">
+    <div>
+      <h2>Engagement by merchant</h2>
+      <div id="engwrap"></div>
+    </div>
+    <div>
+      <h2>Recent events</h2>
+      <div class="card feed" id="feed"><span class="muted">—</span></div>
+    </div>
+  </div>
+
+  <h2>Email templates <span class="muted" style="text-transform:none;letter-spacing:0">— exact copy per sequence stage, from the merchant-outreach skill</span></h2>
+  <div class="card">
+    <div class="tabs" id="tplTabs"></div>
+    <div id="tplBody"></div>
+  </div>
+</main>
+
+<script>
+const SUPABASE_URL = "https://kewwlnwsxakxubuuflyb.supabase.co";
+const ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtld3dsbndzeGFreHVidXVmbHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMzMyMzQsImV4cCI6MjA5NjgwOTIzNH0.BGmryPfQRUlX4or3AnlbOqQfiCfnvjOXNP3PGIvsiVo";
+
+// stage -> {label, subject}. Subject is deterministic from the stage that was sent.
+const STAGES = {
+  null:          {label:"Never contacted", subject:null},
+  day_0_sent:    {label:"Day 0 sent",  subject:"Singapore parents are looking for camps right now. Is yours listed?"},
+  day_3_sent:    {label:"Day 3 sent",  subject:"2,000+ parents clicked through looking for camps"},
+  day_7_sent:    {label:"Day 7 sent",  subject:"Your competitors are already on Jungle"},
+  day_10_sent:   {label:"Day 10 sent", subject:"Parents are hunting for deals right now"},
+  day_12_sent:   {label:"Day 12 (complete)", subject:"last one from us"},
+  excluded:      {label:"Excluded", subject:null},
+  paused:        {label:"Paused", subject:null},
+};
+const FUNNEL_ORDER = ["null","day_0_sent","day_3_sent","day_7_sent","day_10_sent","day_12_sent","excluded","paused"];
+
+// Exact copy from merchant-outreach/SKILL.md — kept verbatim so the dashboard shows what actually sends.
+// {{ph}} markers get highlighted as personalisation placeholders; SIGNATURE renders once, shared by all stages.
+const SIGNATURE = `Best,
+June
+Digital Sales
+
+Jungle (https://www.jungle.baby/)
+Free Listing & Visibility: https://partner.jungle.baby/list-business
+Website Builder: https://partner.jungle.baby/
+AI Agent: https://partner.jungle.baby/build-agent
+Free Templates & Resources: https://www.jungle.baby/merchant-templates
+
+---
+June is powered by AI and may occasionally generate information that is inaccurate or incomplete. Please verify any details independently before acting on them. Any information you share in reply will be used to respond to your query. Jungle is not responsible for your use of AI-generated information. Your use of June does not modify any existing agreement with Jungle.`;
+
+const TEMPLATES = [
+  { stage:"day_0", label:"Day 0 — Intro", subject:"Singapore parents are looking for camps right now. Is yours listed?",
+    body:`Hi {{name}} team,
+
+June holidays are still on. In just the past week, over 3,700 Singapore parents saw our ads and 2,400 clicked through looking for camps. The search is still live.
+
+We ran a Facebook campaign to understand what families are looking for this season. Here's what came back:
+
+1. Multi-sports led by a wide margin, followed by coding and STEM, with demand for chess, arts, leadership, and adventure too.
+2. The sweet spot is ages 7 to 12, with solid interest from teen parents as well.
+3. East, Central, and West were the most active regions.
+
+These are real parents, actively looking. If your camp isn't on Jungle, they won't find you.
+
+Get listed now. Reply with a Yes if you would like to get listed and we will set you up.` },
+
+  { stage:"day_3", label:"Day 3 — Follow-up", subject:"2,000+ parents clicked through looking for camps",
+    body:`Hi {{name}} team,
+
+Since we launched our campaign, traffic on Jungle is up 50%. That's not impressions. 2,000+ parents clicked through specifically looking for camps to book.
+
+{{category_phrase}} as one of the categories they asked for directly.
+
+If {{name}} isn't listed, those parents won't find you. Get listed today. Reply Yes and we'll set you up.` },
+
+  { stage:"day_7", label:"Day 7 — Follow-up", subject:"Your competitors are already on Jungle",
+    body:`Hi {{name}} team,
+
+Parents searching for {{category_camps_phrase}} in your area are finding providers on Jungle right now. A few of them listed before the holidays and are already in front of that audience.
+
+{{name}} isn't on there yet.
+
+Get listed today. Reply Yes and we'll get you live.` },
+
+  { stage:"day_10", label:"Day 10 — Follow-up", subject:"Parents are hunting for deals right now",
+    body:`Hi {{name}} team,
+
+One thing we're seeing clearly: parents are always looking for a discount before they commit. If {{name}} has one running, let us know and we'll feature it. If not, it might be worth creating something simple for families who are on the fence.
+
+Share your offer and we'll feature it on your Jungle listing, our homepage, and promote it across our social media, blogs, and newsletter. No extra cost.
+
+Reply with your deal and we'll get it live.` },
+
+  { stage:"day_12", label:"Day 12 — Final", subject:"last one from us",
+    body:`Hi {{name}} team,
+
+I'll leave it here after this.
+
+Parents are finding camps on Jungle right now. Impressions, Get GungHo, Wolf Camp, Swish Swimming, and Creative Kulture Kids are all listed this season and in front of that audience.
+
+And it's not just holiday camps. Jungle is where parents discover after-school activities, birthday parties, and more year-round. A listing on Jungle keeps {{name}} visible long after the June window closes.
+
+Whenever you're ready, we're here. https://partner.jungle.baby/` },
+];
+
+// Day 3 / Day 7 category personalisation — {category_phrase} feeds Day 3, {category_camps_phrase} feeds Day 7.
+const CATEGORY_MAP = [
+  ["Arts & drama","Arts and drama came up","arts and drama camps"],
+  ["Sports","Sports came up","sports camps"],
+  ["STEM & coding","STEM and coding came up","STEM and coding camps"],
+  ["Swimming","Swimming came up","swimming camps"],
+  ["Language","Language learning came up","language camps"],
+  ["Cooking Classes","Cooking came up","cooking camps"],
+  ["Multi-activity","Multi-activity camps came up as the top category","multi-activity camps"],
+  ["Nature & outdoors","Nature & Outdoors came up","outdoor camps"],
+  ["Martial arts & combat sports","Martial arts came up","martial arts camps"],
+  ["Swimming & water sports","Swimming and water sports came up","swimming and water sports camps"],
+  ["Life skills & enrichment","Life skills and enrichment came up","enrichment camps"],
+  ["Public speaking & communications","Public Speaking and communications came up","public speaking camps"],
+  ["Photography & film","Photography and Film came up","photography and film camps"],
+  ["Gymnastics","Gymnastics came up","gymnastics camps"],
+];
+
+async function sb(path){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers:{ apikey:ANON, Authorization:`Bearer ${ANON}` }
+  });
+  return { ok:r.ok, status:r.status, body: r.ok ? await r.json() : await r.text() };
+}
+
+function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstChild; }
+function esc(s){ return (s??"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function fmt(ts){ if(!ts) return ""; const d=new Date(ts); return d.toLocaleString(undefined,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}); }
+function evShort(t){ return (t||"").replace("email.",""); }
+
+async function load(){
+  document.getElementById("banner").innerHTML="";
+  document.getElementById("sub").textContent="Loading…";
+
+  // 1) Merchants (funnel + email->merchant lookup)
+  const mr = await sb("merchant_crm?select=merchant_id,name,email,category,region,sequence_stage,response_status,last_contacted_at");
+  if(!mr.ok){ document.getElementById("banner").innerHTML=`<div class="banner err">Could not load merchant_crm (HTTP ${mr.status}). ${esc(mr.body)}</div>`; return; }
+  const merchants = mr.body;
+  const byEmail = {};
+  merchants.forEach(m=>{ if(m.email) byEmail[m.email.trim().toLowerCase()]=m; });
+
+  // Funnel counts
+  const counts = {}; FUNNEL_ORDER.forEach(k=>counts[k]=0);
+  merchants.forEach(m=>{ const k=(m.sequence_stage===null||m.sequence_stage===undefined)?"null":m.sequence_stage; if(!(k in counts))counts[k]=0; counts[k]++; });
+
+  // 2) Events (may not exist yet)
+  const er = await sb("email_events?select=resend_email_id,event_type,recipient,subject,clicked_url,occurred_at&order=occurred_at.desc&limit=5000");
+  let events=[], eventsLive=false;
+  if(er.ok){ events=er.body; eventsLive=true; }
+  else {
+    document.getElementById("banner").innerHTML =
+      `<div class="banner warn"><b>Engagement capture not live yet.</b> The <code>email_events</code> table isn't returning data (HTTP ${er.status}). Run <code>schema.sql</code> and deploy the <code>resend-webhook</code> function — the funnel below already works from data you have.</div>`;
+  }
+
+  renderFunnel(counts);
+  renderEngagement(events, byEmail, eventsLive);
+  renderKpis(merchants, counts, events, eventsLive);
+  renderFeed(events, byEmail);
+
+  document.getElementById("sub").textContent =
+    `${merchants.length} merchants · ${eventsLive?events.length+" events":"engagement offline"} · updated ${new Date().toLocaleTimeString()}`;
+}
+
+function renderFunnel(counts){
+  const wrap=document.getElementById("funnel"); wrap.innerHTML="";
+  FUNNEL_ORDER.forEach(k=>{
+    if((counts[k]||0)===0 && (k==="paused")) return;
+    wrap.appendChild(el(`<div class="stage"><div class="n">${counts[k]||0}</div><div class="l">${esc(STAGES[k]?.label||k)}</div></div>`));
+  });
+}
+
+// Reduce events into per-merchant engagement, keyed by recipient email.
+function reduceEngagement(events, byEmail){
+  const map={}; // email -> {merchant, sent,delivered,opened,clicked,bounced, lastSubject, last}
+  events.forEach(ev=>{
+    const key=(ev.recipient||"").trim().toLowerCase(); if(!key) return;
+    const m = map[key] || (map[key]={merchant:byEmail[key]||null, sent:0,delivered:0,opened:0,clicked:0,bounced:0,lastSubject:null,last:null,email:ev.recipient});
+    const t=evShort(ev.event_type);
+    if(t==="sent")m.sent++; else if(t==="delivered")m.delivered++; else if(t==="opened")m.opened++;
+    else if(t==="clicked")m.clicked++; else if(t==="bounced"||t==="complained")m.bounced++;
+    if(!m.last || new Date(ev.occurred_at)>new Date(m.last)){ m.last=ev.occurred_at; m.lastSubject=ev.subject; }
+  });
+  return map;
+}
+
+function renderEngagement(events, byEmail, live){
+  const wrap=document.getElementById("engwrap");
+  if(!live){ wrap.innerHTML=`<div class="card muted">Waiting for the first webhook event.</div>`; return; }
+  const map=reduceEngagement(events, byEmail);
+  const rows=Object.values(map).sort((a,b)=> new Date(b.last)-new Date(a.last));
+  if(rows.length===0){ wrap.innerHTML=`<div class="card muted">No events captured yet. Send a batch, or wait for Resend to deliver the next one.</div>`; return; }
+  const t=el(`<table><thead><tr>
+    <th>Merchant</th><th>Stage</th><th>Subject</th>
+    <th title="delivered">Deliv</th><th title="opened">Open</th><th title="clicked">Click</th><th>Last event</th>
+  </tr></thead><tbody></tbody></table>`);
+  const tb=t.querySelector("tbody");
+  rows.forEach(r=>{
+    const m=r.merchant;
+    const stage = m ? (STAGES[m.sequence_stage]?.label || m.sequence_stage || "—") : "—";
+    const name = m ? esc(m.name) : `<span class="muted">${esc(r.email)}</span>`;
+    const cell=(n)=> n>0 ? `<span class="cnt">${n}</span>` : `<span class="dot">·</span>`;
+    tb.appendChild(el(`<tr>
+      <td>${name}${m?`<div class="muted" style="font-size:11px">${esc(r.email)}</div>`:""}</td>
+      <td><span class="stagechip">${esc(stage)}</span></td>
+      <td class="subj" title="${esc(r.lastSubject||"")}">${esc(r.lastSubject||"")}</td>
+      <td>${r.delivered>0?'<span class="tick">✓</span>':(r.bounced>0?'<span style="color:var(--bad)">✕</span>':'<span class="dot">·</span>')}</td>
+      <td>${cell(r.opened)}</td>
+      <td>${cell(r.clicked)}</td>
+      <td class="muted">${esc(fmt(r.last))}</td>
+    </tr>`));
+  });
+  wrap.innerHTML=""; wrap.appendChild(t);
+}
+
+function renderKpis(merchants, counts, events, live){
+  const wrap=document.getElementById("kpis"); wrap.innerHTML="";
+  const contacted = merchants.length - (counts["null"]||0) - (counts["excluded"]||0);
+  const inSeq = (counts["day_0_sent"]||0)+(counts["day_3_sent"]||0)+(counts["day_7_sent"]||0)+(counts["day_10_sent"]||0);
+  const cards=[
+    {n:merchants.length, l:"Total merchants"},
+    {n:contacted, l:"Contacted (≥ Day 0)"},
+    {n:inSeq, l:"Active in sequence"},
+    {n:counts["null"]||0, l:"Never contacted"},
+  ];
+  if(live){
+    const uniq=(t)=>{const s=new Set();events.forEach(e=>{if(evShort(e.event_type)===t && e.recipient)s.add(e.recipient.toLowerCase())});return s.size;};
+    const sent=uniq("sent")||uniq("delivered"); const deliv=uniq("delivered"); const open=uniq("opened"); const click=uniq("clicked");
+    const pct=(a,b)=> b>0? Math.round(100*a/b)+"%":"—";
+    cards.push(
+      {n:deliv, l:"Delivered", pct: sent?`${pct(deliv,sent)} of sent`:null},
+      {n:open, l:"Opened", pct: deliv?`${pct(open,deliv)} open rate`:null},
+      {n:click, l:"Clicked", pct: open?`${pct(click,open)} of opens`:null},
+    );
+  }
+  cards.forEach(c=>{
+    wrap.appendChild(el(`<div class="card kpi"><div class="n">${c.n}</div><div class="l">${esc(c.l)}</div>${c.pct?`<div class="pct">${esc(c.pct)}</div>`:""}</div>`));
+  });
+}
+
+function highlightPlaceholders(body){
+  return esc(body).replace(/\{\{(.+?)\}\}/g, (_,name)=>`<span class="ph">{${esc(name)}}</span>`);
+}
+
+function renderTemplates(activeStage){
+  const tabs = document.getElementById("tplTabs");
+  tabs.innerHTML = "";
+  TEMPLATES.forEach(t=>{
+    const b = el(`<button class="tab${t.stage===activeStage?' active':''}">${esc(t.label)}</button>`);
+    b.onclick = ()=>renderTemplates(t.stage);
+    tabs.appendChild(b);
+  });
+
+  const t = TEMPLATES.find(x=>x.stage===activeStage) || TEMPLATES[0];
+  const wrap = document.getElementById("tplBody");
+  wrap.innerHTML = "";
+
+  const needsCategory = t.stage==="day_3" || t.stage==="day_7";
+  let catTable = "";
+  if(needsCategory){
+    const col = t.stage==="day_3" ? 1 : 2;
+    catTable = `<details class="catmap"><summary>Category personalisation — ${CATEGORY_MAP.length} categories mapped (click to expand)</summary>
+      <table><thead><tr><th>Merchant category</th><th>Fills into the email as</th></tr></thead><tbody>
+      ${CATEGORY_MAP.map(row=>`<tr><td>${esc(row[0])}</td><td>${esc(row[col])}</td></tr>`).join("")}
+      </tbody></table></details>`;
+  }
+
+  wrap.appendChild(el(`<div>
+    <div class="tpl-meta"><span class="stagechip">${esc(t.label)}</span></div>
+    <div class="tpl-subject">Subject: ${esc(t.subject)}</div>
+    <div class="tpl-body" style="margin-top:10px">${highlightPlaceholders(t.body)}<div class="tpl-sig">${highlightPlaceholders(SIGNATURE)}</div></div>
+    ${catTable}
+  </div>`));
+}
+
+function renderFeed(events, byEmail){
+  const wrap=document.getElementById("feed");
+  if(!events.length){ wrap.innerHTML=`<span class="muted">No events yet.</span>`; return; }
+  wrap.innerHTML="";
+  events.slice(0,60).forEach(ev=>{
+    const key=(ev.recipient||"").trim().toLowerCase();
+    const m=byEmail[key];
+    const who = m? esc(m.name) : esc(ev.recipient||"unknown");
+    wrap.appendChild(el(`<div class="row">
+      <span><span class="ev ${evShort(ev.event_type)}">${esc(evShort(ev.event_type))}</span> · ${who}</span>
+      <span class="muted">${esc(fmt(ev.occurred_at))}</span>
+    </div>`));
+  });
+}
+
+renderTemplates("day_0");
+load();
+</script>
+</body>
+</html>
