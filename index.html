@@ -251,9 +251,22 @@ async function load(){
       `<div class="banner warn"><b>Engagement capture not live yet.</b> The <code>email_events</code> table isn't returning data (HTTP ${er.status}). Run <code>schema.sql</code> and deploy the <code>resend-webhook</code> function — the funnel below already works from data you have.</div>`;
   }
 
+  // 3) Manual batch stats (historical aggregate numbers entered from Resend dashboard)
+  const bsr = await sb("email_batch_stats?select=stage,sent_at,sent_count,delivered,opened,clicked&order=sent_at.asc");
+  const batchTotals = {sent:0, delivered:0, opened:0, clicked:0, rows:[]};
+  if(bsr.ok){
+    bsr.body.forEach(r=>{
+      batchTotals.sent      += r.sent_count||0;
+      batchTotals.delivered += r.delivered||0;
+      batchTotals.opened    += r.opened||0;
+      batchTotals.clicked   += r.clicked||0;
+      batchTotals.rows.push(r);
+    });
+  }
+
   renderFunnel(counts);
   renderEngagement(events, byEmail, eventsLive);
-  renderKpis(merchants, counts, events, eventsLive);
+  renderKpis(merchants, counts, events, eventsLive, batchTotals);
   renderFeed(events, byEmail);
 
   document.getElementById("sub").textContent =
@@ -311,7 +324,7 @@ function renderEngagement(events, byEmail, live){
   wrap.innerHTML=""; wrap.appendChild(t);
 }
 
-function renderKpis(merchants, counts, events, live){
+function renderKpis(merchants, counts, events, live, batchTotals){
   const wrap=document.getElementById("kpis"); wrap.innerHTML="";
   const contacted = merchants.length - (counts["null"]||0) - (counts["excluded"]||0);
   const inSeq = (counts["day_0_sent"]||0)+(counts["day_3_sent"]||0)+(counts["day_7_sent"]||0)+(counts["day_10_sent"]||0);
@@ -321,14 +334,25 @@ function renderKpis(merchants, counts, events, live){
     {n:inSeq, l:"Active in sequence"},
     {n:counts["null"]||0, l:"Never contacted"},
   ];
-  if(live){
-    const uniq=(t)=>{const s=new Set();events.forEach(e=>{if(evShort(e.event_type)===t && e.recipient)s.add(e.recipient.toLowerCase())});return s.size;};
-    const sent=uniq("sent")||uniq("delivered"); const deliv=uniq("delivered"); const open=uniq("opened"); const click=uniq("clicked");
-    const pct=(a,b)=> b>0? Math.round(100*a/b)+"%":"—";
+  const pct=(a,b)=> b>0? Math.round(100*a/b)+"%":"—";
+  const hasBatch = batchTotals && batchTotals.sent > 0;
+  if(hasBatch){
+    const s=batchTotals.sent, d=batchTotals.delivered, o=batchTotals.opened, c=batchTotals.clicked;
     cards.push(
-      {n:deliv, l:"Delivered", pct: sent?`${pct(deliv,sent)} of sent`:null},
-      {n:open, l:"Opened", pct: deliv?`${pct(open,deliv)} open rate`:null},
-      {n:click, l:"Clicked", pct: open?`${pct(click,open)} of opens`:null},
+      {n:s, l:"Sent"},
+      {n:d, l:"Delivered", pct:`${pct(d,s)} of sent`},
+      {n:o, l:"Opened",    pct:`${pct(o,s)} of sent`},
+      {n:c, l:"Clicked",   pct:`${pct(c,s)} of sent`},
+    );
+  } else if(live){
+    const uniq=(t)=>{const s=new Set();events.forEach(e=>{if(evShort(e.event_type)===t && e.recipient)s.add(e.recipient.toLowerCase())});return s.size;};
+    const sent=uniq("sent"); const deliv=uniq("delivered"); const open=uniq("opened"); const click=uniq("clicked");
+    const base=sent||deliv;
+    cards.push(
+      {n:base,  l:"Sent"},
+      {n:deliv, l:"Delivered", pct: base?`${pct(deliv,base)} of sent`:null},
+      {n:open,  l:"Opened",    pct: base?`${pct(open,base)} of sent`:null},
+      {n:click, l:"Clicked",   pct: base?`${pct(click,base)} of sent`:null},
     );
   }
   cards.forEach(c=>{
