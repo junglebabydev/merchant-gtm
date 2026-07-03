@@ -70,6 +70,24 @@
   .catmap summary{cursor:pointer;color:var(--accent-dark);font-size:12.5px;font-weight:600}
   .catmap table{margin-top:8px}
   .catmap th,.catmap td{font-size:12.5px;padding:6px 10px}
+
+  /* Clickable KPI cards */
+  .kpi.drill{cursor:pointer;transition:box-shadow .15s,transform .1s}
+  .kpi.drill:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px);border-color:var(--accent)}
+  .kpi.drill::after{content:"↗";font-size:11px;color:var(--accent);float:right;margin-top:-2px;opacity:.6}
+
+  /* Drill-down slide panel */
+  #drillBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:100;display:none}
+  #drillBackdrop.open{display:block}
+  #drillPanel{position:fixed;top:0;right:-520px;width:520px;max-width:96vw;height:100vh;background:var(--card);box-shadow:-4px 0 28px rgba(0,0,0,.15);z-index:101;display:flex;flex-direction:column;transition:right .25s ease}
+  #drillPanel.open{right:0}
+  #drillHead{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:2px solid var(--accent);background:var(--accent-soft);flex-shrink:0}
+  #drillHead h3{margin:0;font-size:15px;font-weight:700;color:var(--accent-dark)}
+  #drillClose{border:none;background:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:2px 6px}
+  #drillClose:hover{color:var(--ink)}
+  #drillBody{overflow-y:auto;flex:1}
+  #drillBody table{border-radius:0;border:none;border-top:none}
+  #drillBody th{position:sticky;top:0}
 </style>
 </head>
 <body>
@@ -109,6 +127,15 @@
     <div id="tplBody"></div>
   </div>
 </main>
+
+<div id="drillBackdrop" onclick="closeDrill()"></div>
+<div id="drillPanel">
+  <div id="drillHead">
+    <h3 id="drillTitle">—</h3>
+    <button id="drillClose" onclick="closeDrill()">✕</button>
+  </div>
+  <div id="drillBody"></div>
+</div>
 
 <script>
 const SUPABASE_URL = "https://kewwlnwsxakxubuuflyb.supabase.co";
@@ -264,6 +291,9 @@ async function load(){
     });
   }
 
+  window._events = events;
+  window._byEmail = byEmail;
+
   renderFunnel(counts);
   renderEngagement(events, byEmail, eventsLive);
   renderKpis(merchants, counts, events, eventsLive, batchTotals);
@@ -336,30 +366,33 @@ function renderKpis(merchants, counts, events, live, batchTotals){
   ];
   const pct=(a,b)=> b>0? Math.round(100*a/b)+"%":"—";
   const hasBatch = batchTotals && batchTotals.sent > 0;
+  const bouncedCount = events.filter(ev=>evShort(ev.event_type)==="bounced").length;
   if(hasBatch){
-    // Primary source: aggregate numbers pulled from Resend dashboard into email_batch_stats.
-    // These are always accurate; webhook events feed the engagement-by-merchant table separately.
     const s=batchTotals.sent, d=batchTotals.delivered, o=batchTotals.opened, c=batchTotals.clicked;
     cards.push(
-      {n:s, l:"Sent"},
-      {n:d, l:"Delivered", pct:`${pct(d,s)} of sent`},
-      {n:o, l:"Opened",    pct:`${pct(o,s)} of sent`},
-      {n:c, l:"Clicked",   pct:`${pct(c,s)} of sent`},
+      {n:s,            l:"Sent",      drill:"sent"},
+      {n:d,            l:"Delivered", pct:`${pct(d,s)} of sent`, drill:"delivered"},
+      {n:bouncedCount, l:"Bounced",   drill:"bounced"},
+      {n:o,            l:"Opened",    pct:`${pct(o,s)} of sent`, drill:"opened"},
+      {n:c,            l:"Clicked",   pct:`${pct(c,s)} of sent`, drill:"clicked"},
     );
   } else if(live){
-    // Fallback: count unique recipients per event type from the webhook.
     const uniq=(t)=>{const s=new Set();events.forEach(e=>{if(evShort(e.event_type)===t && e.recipient)s.add(e.recipient.toLowerCase())});return s.size;};
     const sent=uniq("sent"); const deliv=uniq("delivered"); const open=uniq("opened"); const click=uniq("clicked");
     const base=sent||deliv;
     cards.push(
-      {n:base,  l:"Sent"},
-      {n:deliv, l:"Delivered", pct: base?`${pct(deliv,base)} of sent`:null},
-      {n:open,  l:"Opened",    pct: base?`${pct(open,base)} of sent`:null},
-      {n:click, l:"Clicked",   pct: base?`${pct(click,base)} of sent`:null},
+      {n:base,         l:"Sent",      drill:"sent"},
+      {n:deliv,        l:"Delivered", pct: base?`${pct(deliv,base)} of sent`:null, drill:"delivered"},
+      {n:bouncedCount, l:"Bounced",   drill:"bounced"},
+      {n:open,         l:"Opened",    pct: base?`${pct(open,base)} of sent`:null,  drill:"opened"},
+      {n:click,        l:"Clicked",   pct: base?`${pct(click,base)} of sent`:null, drill:"clicked"},
     );
   }
   cards.forEach(c=>{
-    wrap.appendChild(el(`<div class="card kpi"><div class="n">${c.n}</div><div class="l">${esc(c.l)}</div>${c.pct?`<div class="pct">${esc(c.pct)}</div>`:""}</div>`));
+    const attrs = c.drill
+      ? ` class="card kpi drill" onclick="openDrill('${c.drill}','${c.l}')" title="Click to see who"`
+      : ` class="card kpi"`;
+    wrap.appendChild(el(`<div${attrs}><div class="n">${c.n}</div><div class="l">${esc(c.l)}</div>${c.pct?`<div class="pct">${esc(c.pct)}</div>`:""}</div>`));
   });
 }
 
@@ -411,6 +444,48 @@ function renderFeed(events, byEmail){
       <span class="muted">${esc(fmt(ev.occurred_at))}</span>
     </div>`));
   });
+}
+
+function openDrill(type, title){
+  const events = window._events || [];
+  const byEmail = window._byEmail || {};
+  const filtered = events
+    .filter(ev => evShort(ev.event_type) === type)
+    .sort((a,b) => new Date(b.occurred_at) - new Date(a.occurred_at));
+
+  document.getElementById("drillTitle").textContent = `${title} — ${filtered.length} email${filtered.length!==1?"s":""}`;
+  const body = document.getElementById("drillBody");
+  body.innerHTML = "";
+
+  if(!filtered.length){
+    body.innerHTML = `<div class="muted" style="padding:20px">No events recorded yet.</div>`;
+  } else {
+    const t = el(`<table><thead><tr>
+      <th>Merchant</th><th>Stage</th><th>Subject</th><th>Date</th>
+    </tr></thead><tbody></tbody></table>`);
+    const tb = t.querySelector("tbody");
+    filtered.forEach(ev=>{
+      const key = (ev.recipient||"").trim().toLowerCase();
+      const m = byEmail[key];
+      const name = m ? esc(m.name) : `<span class="muted">${esc(ev.recipient||"—")}</span>`;
+      const stage = m ? (STAGES[m.sequence_stage]?.label || m.sequence_stage || "—") : "—";
+      tb.appendChild(el(`<tr>
+        <td>${name}${m?`<div class="muted" style="font-size:11px">${esc(ev.recipient||"")}</div>`:""}</td>
+        <td><span class="stagechip">${esc(stage)}</span></td>
+        <td class="subj" title="${esc(ev.subject||"")}">${esc(ev.subject||"—")}</td>
+        <td class="muted" style="white-space:nowrap">${esc(fmt(ev.occurred_at))}</td>
+      </tr>`));
+    });
+    body.appendChild(t);
+  }
+
+  document.getElementById("drillPanel").classList.add("open");
+  document.getElementById("drillBackdrop").classList.add("open");
+}
+
+function closeDrill(){
+  document.getElementById("drillPanel").classList.remove("open");
+  document.getElementById("drillBackdrop").classList.remove("open");
 }
 
 renderTemplates("day_0");
