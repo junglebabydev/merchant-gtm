@@ -272,7 +272,8 @@ async function load(){
   // 2) Events (may not exist yet)
   const er = await sb("email_events?select=resend_email_id,event_type,recipient,subject,clicked_url,occurred_at&order=occurred_at.desc&limit=5000");
   let events=[], eventsLive=false;
-  if(er.ok){ events=er.body; eventsLive=true; }
+  const INTERNAL = new Set(["vaibhav@jungle.baby","jasmit@jungle.baby"]);
+  if(er.ok){ events=er.body.filter(ev=>!INTERNAL.has((ev.recipient||"").trim().toLowerCase())); eventsLive=true; }
   else {
     document.getElementById("banner").innerHTML =
       `<div class="banner warn"><b>Engagement capture not live yet.</b> The <code>email_events</code> table isn't returning data (HTTP ${er.status}). Run <code>schema.sql</code> and deploy the <code>resend-webhook</code> function — the funnel below already works from data you have.</div>`;
