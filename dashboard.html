@@ -450,9 +450,17 @@ function renderFeed(events, byEmail){
 function openDrill(type, title){
   const events = window._events || [];
   const byEmail = window._byEmail || {};
-  const filtered = events
-    .filter(ev => evShort(ev.event_type) === type)
-    .sort((a,b) => new Date(b.occurred_at) - new Date(a.occurred_at));
+  let filtered = events.filter(ev => evShort(ev.event_type) === type);
+  // For clicks: one row per email sent, not per link clicked.
+  // Same merchant clicking Day 3 + Day 7 = 2 rows; 3 links in same email = 1 row.
+  if(type === 'clicked'){
+    const seen = new Set();
+    filtered = filtered.filter(ev => {
+      if(seen.has(ev.resend_email_id)) return false;
+      seen.add(ev.resend_email_id); return true;
+    });
+  }
+  filtered.sort((a,b) => new Date(b.occurred_at) - new Date(a.occurred_at));
 
   document.getElementById("drillTitle").textContent = `${title} — ${filtered.length} email${filtered.length!==1?"s":""}`;
   const body = document.getElementById("drillBody");
