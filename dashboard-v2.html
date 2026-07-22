@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Jungle · Merchant Outreach v2</title>
+<style>
+:root{
+  --jungle:#2F6B4F;--jungle-dark:#24543E;--jungle-soft:#EAF2EE;
+  --sidebar:#0E1C14;--sidebar-w:220px;
+  --bg:#F7F8F6;--card:#fff;--border:#E5EAE7;
+  --ink:#1A2E22;--muted:#6B7A6F;
+  --amber:#D97706;--amber-soft:#FEF3C7;
+  --red:#DC2626;--red-soft:#FEE2E2;
+  --green:#059669;--green-soft:#D1FAE5;
+  --purple:#7C3AED;--purple-soft:#EDE9FE;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+  --shadow:0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+  --r:10px;--r-sm:6px;--header-h:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:13px/1.5 ui-sans-serif,-apple-system,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;height:100vh;overflow:hidden;font-variant-numeric:tabular-nums}
+
+#sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--sidebar);display:flex;flex-direction:column;height:100vh;overflow:hidden;z-index:20}
+.sb-logo{padding:18px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo img{height:24px;filter:brightness(0) invert(1);display:block}
+.sb-divider{width:1px;height:20px;background:rgba(255,255,255,.15)}
+.sb-wordmark{font-size:11px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:.06em;text-transform:uppercase}
+.sb-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.22);padding:16px 16px 6px}
+.nav-item{display:flex;align-items:center;gap:9px;margin:1px 8px;padding:8px 10px;border-radius:var(--r-sm);color:rgba(255,255,255,.6);font-size:12px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s,color .12s}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
+.nav-item.active{background:rgba(47,107,79,.4);color:#fff;font-weight:600}
+.nav-icon{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.sb-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:10px;color:rgba(255,255,255,.18);line-height:1.7}
+
+#app{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+#topbar{height:var(--header-h);flex-shrink:0;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:12px}
+.tb-left{display:flex;align-items:center;gap:14px;min-width:0}
+.tb-title{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap}
+.tb-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--jungle);background:var(--jungle-soft);padding:3px 9px;border-radius:20px}
+.live-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--jungle);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:background .12s}
+.btn-primary{background:var(--jungle);color:#fff}.btn-primary:hover{background:var(--jungle-dark)}
+.btn-primary svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+.v-switch{display:flex;background:#E8ECE9;border:1px solid var(--border);border-radius:var(--r);padding:3px;gap:3px}
+.v-btn{border:none;background:transparent;padding:8px 18px;border-radius:var(--r-sm);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:background .15s,color .15s,box-shadow .15s;white-space:nowrap;letter-spacing:.01em}
+.v-btn:hover{background:rgba(255,255,255,.6);color:var(--ink)}
+.v-btn.active{box-shadow:0 1px 4px rgba(0,0,0,.12);color:#fff}
+.v-btn[data-v="all"].active{background:var(--ink)}
+.v-btn[data-v="camps"].active{background:var(--jungle)}
+.v-btn[data-v="birthdays"].active{background:var(--amber)}
+.v-btn[data-v="classes"].active{background:var(--purple)}
+
+.vchip{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin:0 2px;text-transform:uppercase;letter-spacing:.04em}
+.vchip.camps{background:var(--jungle-soft);color:var(--jungle-dark)}
+.vchip.birthdays{background:var(--amber-soft);color:#92400E}
+.vchip.classes{background:var(--purple-soft);color:var(--purple)}
+
+.vert-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.vert-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:box-shadow .15s,transform .12s}
+.vert-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.vert-card.empty{opacity:.55;cursor:default}.vert-card.empty:hover{box-shadow:none;transform:none}
+.vert-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.vert-card-title.camps{color:var(--jungle-dark)}.vert-card-title.birthdays{color:#92400E}.vert-card-title.classes{color:var(--purple)}
+
+#content{flex:1;overflow-y:auto;padding:22px}
+.page{display:none}.page.active{display:block}
+.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.mb{margin-bottom:20px}
+
+.g{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
+.g-auto{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+.two-col{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+@media(max-width:920px){.two-col,.g3,.g4,.g5,.vert-strip{grid-template-columns:1fr!important}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm)}
+.card-p{padding:18px}.card-sm{padding:14px}
+
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:18px;position:relative;overflow:hidden}
+.kpi.clickable{cursor:pointer;transition:box-shadow .15s,transform .12s}
+.kpi.clickable:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.kpi-stripe{height:3px;border-radius:3px;background:var(--jungle);margin-bottom:14px}
+.kpi-stripe.amber{background:var(--amber)}.kpi-stripe.red{background:var(--red)}.kpi-stripe.grey{background:var(--border)}.kpi-stripe.green{background:var(--green)}.kpi-stripe.purple{background:var(--purple)}
+.kpi-eye{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+.kpi-num{font-size:38px;font-weight:800;line-height:1;color:var(--ink);letter-spacing:-.02em}
+.kpi-num.green{color:var(--jungle)}.kpi-num.amber{color:var(--amber)}.kpi-num.purple{color:var(--purple)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
+.drill-hint{position:absolute;top:14px;right:14px;font-size:10px;color:var(--jungle);opacity:0;transition:opacity .15s}
+.kpi.clickable:hover .drill-hint{opacity:.6}
+
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge.green{background:var(--green-soft);color:var(--green)}
+.badge.brand{background:var(--jungle-soft);color:var(--jungle-dark)}
+.badge.amber{background:var(--amber-soft);color:var(--amber)}
+.badge.red{background:var(--red-soft);color:var(--red)}
+.badge.grey{background:#F3F4F3;color:var(--muted)}
+
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.bar-label{width:76px;font-size:11px;color:var(--muted);flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--jungle);transition:width .7s ease}
+.bar-fill.amber{background:var(--amber)}.bar-fill.red{background:var(--red)}.bar-fill.green{background:var(--green)}
+.bar-n{width:30px;font-size:12px;font-weight:700;text-align:right;flex-shrink:0}
+.bar-pct{width:38px;font-size:11px;color:var(--muted);text-align:right;flex-shrink:0}
+
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--card)}
+table{width:100%;border-collapse:collapse}
+th{background:#F3F5F3;color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th.sort{cursor:pointer;user-select:none}
+th.asc::after{content:' ↑'}th.desc::after{content:' ↓'}
+td{padding:9px 13px;font-size:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background .08s}tbody tr:hover td{background:#F9FAF9}
+.td-p{font-weight:600;color:var(--ink)}.td-s{font-size:10px;color:var(--muted);margin-top:1px}
+
+.feed-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.ev{font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em}
+.ev.sent{background:#F3F4F3;color:var(--muted)}
+.ev.delivered{background:var(--green-soft);color:var(--green)}
+.ev.opened{background:var(--jungle-soft);color:var(--jungle-dark)}
+.ev.clicked{background:var(--amber-soft);color:var(--amber)}
+.ev.bounced,.ev.complained{background:var(--red-soft);color:var(--red)}
+
+.chip{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;background:var(--jungle-soft);color:var(--jungle-dark)}
+.chip.none{background:#F3F4F3;color:var(--muted)}.chip.excl{background:var(--red-soft);color:var(--red)}
+
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search-wrap{flex:1;min-width:180px;display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px}
+.search-wrap svg{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.search-wrap input{border:none;outline:none;font-size:12px;background:transparent;width:100%;color:var(--ink)}
+.ftab{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:var(--r-sm);padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .1s,color .1s,border-color .1s}
+.ftab:hover{background:var(--jungle-soft);color:var(--jungle)}.ftab.active{background:var(--jungle);border-color:var(--jungle);color:#fff}
+
+.camp-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--jungle);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm)}
+.camp-card.alt{border-left-color:var(--amber)}.camp-card.bday{border-left-color:var(--amber)}.camp-card.cls{border-left-color:var(--purple)}
+.camp-stage{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--jungle);margin-bottom:2px}
+.camp-card.alt .camp-stage,.camp-card.bday .camp-stage{color:var(--amber)}.camp-card.cls .camp-stage{color:var(--purple)}
+.camp-date{font-size:10px;color:var(--muted);margin-bottom:8px}
+.camp-subject{font-size:12px;color:var(--ink);font-weight:500;line-height:1.4;margin-bottom:12px}
+.camp-n{font-size:26px;font-weight:800;color:var(--ink);line-height:1}
+.camp-nl{font-size:10px;color:var(--muted);margin-bottom:12px;margin-top:2px}
+.camp-divider{height:1px;background:var(--border);margin:12px 0}
+
+#panelBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.22);z-index:100;display:none;backdrop-filter:blur(2px)}
+#panelBackdrop.open{display:block}
+#sidePanel{position:fixed;top:0;right:-560px;width:560px;max-width:96vw;height:100vh;background:var(--card);box-shadow:var(--shadow-lg);z-index:101;display:flex;flex-direction:column;transition:right .22s cubic-bezier(.4,0,.2,1)}
+#sidePanel.open{right:0}
+.panel-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;background:#FAFBFA}
+.panel-head h3{font-size:14px;font-weight:700;color:var(--ink);margin:0}
+.panel-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.panel-close{border:none;background:none;font-size:18px;cursor:pointer;color:var(--muted);padding:2px;line-height:1;flex-shrink:0}
+.panel-close:hover{color:var(--ink)}
+.panel-body{flex:1;overflow-y:auto}
+.panel-body table{border-radius:0;border:none}
+.panel-body th{position:sticky;top:0}
+.m-meta{padding:14px 16px;border-bottom:1px solid var(--border);background:#FAFBFA}
+.m-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+
+.tpl-vert-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px}
+.tpl-vert-tab{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:var(--r-sm);padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:background .1s}
+.tpl-vert-tab:hover{background:var(--jungle-soft)}.tpl-vert-tab.active{background:var(--jungle);border-color:var(--jungle);color:#fff}
+.tpl-seg-tabs{display:flex;gap:4px;margin-bottom:12px}
+.tpl-seg-tab{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:var(--r-sm);padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;transition:background .1s}
+.tpl-seg-tab.active{background:var(--purple);border-color:var(--purple);color:#fff}.tpl-seg-tab:hover{background:var(--purple-soft)}
+.tpl-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.tpl-tab{border:1px solid var(--border);background:var(--card);color:var(--muted);border-radius:var(--r-sm);padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:background .1s}
+.tpl-tab:hover{background:var(--jungle-soft)}.tpl-tab.active{background:var(--jungle);border-color:var(--jungle);color:#fff}
+.tpl-subject{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.tpl-body{white-space:pre-wrap;font-size:13px;line-height:1.7;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px}
+.ph{background:var(--jungle-soft);color:var(--jungle-dark);border-radius:3px;padding:0 4px;font:600 11px/1.4 ui-monospace,monospace}
+.tpl-sig{color:var(--muted);font-size:11px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
+.tpl-note{font-size:11px;color:var(--muted);background:var(--amber-soft);border:1px solid #FDE68A;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:12px}
+
+.sys-section{margin-bottom:28px}
+.sys-h2{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.sys-table td,.sys-table th{font-size:11px;padding:6px 10px}
+.sys-table th{background:#F3F5F3}
+.sys-p{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:8px}
+.sys-code{font-family:ui-monospace,monospace;font-size:11px;background:#F3F5F3;padding:2px 5px;border-radius:3px;color:var(--jungle-dark)}
+
+#banner{margin-bottom:14px}
+.banner{padding:10px 14px;border-radius:var(--r-sm);font-size:12px}
+.banner.warn{background:var(--amber-soft);border:1px solid #FDE68A;color:#92400E}
+.banner.err{background:var(--red-soft);border:1px solid #FECACA;color:#991B1B}
+.empty-state{padding:32px 16px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sb-logo">
+    <img src="jungle-logo.png" alt="Jungle"/>
+    <div class="sb-divider"></div>
+    <span class="sb-wordmark">Outreach</span>
+  </div>
+  <div class="sb-section">Analytics</div>
+  <div class="nav-item active" data-page="overview" onclick="nav('overview')">
+    <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview
+  </div>
+  <div class="nav-item" data-page="campaigns" onclick="nav('campaigns')">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Campaigns
+  </div>
+  <div class="nav-item" data-page="merchants" onclick="nav('merchants')">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Merchants
+  </div>
+  <div class="nav-item" data-page="analytics" onclick="nav('analytics')">
+    <svg class="nav-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Analytics
+  </div>
+  <div class="sb-section">Content</div>
+  <div class="nav-item" data-page="templates" onclick="nav('templates')">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Email Templates
+  </div>
+  <div class="sb-section">System</div>
+  <div class="nav-item" data-page="system" onclick="nav('system')">
+    <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Docs
+  </div>
+  <div class="sb-footer" id="sb-footer">v2</div>
+</aside>
+
+<div id="app">
+  <div id="topbar">
+    <div class="tb-left">
+      <div>
+        <div class="tb-title" id="tb-title">Overview</div>
+        <div class="tb-sub" id="tb-sub">Loading...</div>
+      </div>
+      <div class="v-switch" id="v-switch">
+        <button class="v-btn active" data-v="all" onclick="setVertical('all')">All</button>
+        <button class="v-btn" data-v="camps" onclick="setVertical('camps')">Camps</button>
+        <button class="v-btn" data-v="birthdays" onclick="setVertical('birthdays')">Birthdays</button>
+        <button class="v-btn" data-v="classes" onclick="setVertical('classes')">Classes</button>
+      </div>
+    </div>
+    <div class="tb-right">
+      <span class="live-badge">Live</span>
+      <button class="btn btn-primary" onclick="load()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>Refresh
+      </button>
+    </div>
+  </div>
+
+  <div id="content">
+    <div id="banner"></div>
+
+    <div id="page-overview" class="page active">
+      <div id="ov-hero-kpis" class="g g5 mb"></div>
+      <div id="ov-vert-strip" class="vert-strip mb"></div>
+      <div class="two-col mb">
+        <div>
+          <div class="sec-label">Email funnel</div>
+          <div class="card card-p" id="funnel-card"></div>
+        </div>
+        <div>
+          <div class="sec-label">Recent activity</div>
+          <div class="card" id="feed-card" style="max-height:268px;overflow:hidden"></div>
+        </div>
+      </div>
+      <div class="sec-label">Sequence pipeline</div>
+      <div class="g g-auto" id="pipeline-row"></div>
+    </div>
+
+    <div id="page-campaigns" class="page">
+      <div class="sec-label">All send batches</div>
+      <div class="g g3" id="camp-grid"></div>
+    </div>
+
+    <div id="page-merchants" class="page">
+      <div id="merch-vert-row" style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap"></div>
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="merch-search" type="text" placeholder="Search by name, email or category..." oninput="renderMerchants()"/>
+        </div>
+        <div id="merch-ftabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+      </div>
+      <div id="merch-tbl"></div>
+    </div>
+
+    <div id="page-analytics" class="page">
+      <div class="sec-label">Engagement over time</div>
+      <div class="card card-p mb" id="a-trend"></div>
+      <div class="two-col mb">
+        <div>
+          <div class="sec-label">Engagement funnel</div>
+          <div class="card card-p" id="a-funnel"></div>
+        </div>
+        <div>
+          <div class="sec-label">Per-campaign performance</div>
+          <div class="card card-p" id="a-camps"></div>
+        </div>
+      </div>
+      <div class="sec-label">Engagement by category</div>
+      <div class="card card-p mb" id="a-category"></div>
+      <div class="sec-label">Most engaged merchants</div>
+      <div id="a-top"></div>
+    </div>
+
+    <div id="page-templates" class="page">
+      <div class="card card-p">
+        <div class="tpl-vert-tabs" id="tpl-vert-tabs"></div>
+        <div id="tpl-inner"></div>
+      </div>
+    </div>
+
+    <div id="page-system" class="page">
+      <div class="card card-p">
+        <div class="sys-section">
+          <div class="sys-h2">Database tables</div>
+          <div class="tbl-wrap" style="margin-bottom:14px">
+            <table class="sys-table">
+              <thead><tr><th>Table</th><th>Purpose</th><th>Key columns</th></tr></thead>
+              <tbody>
+                <tr><td><span class="sys-code">merchant_crm</span></td><td>Master identity for each merchant</td><td>merchant_id, name, email, category, region</td></tr>
+                <tr><td><span class="sys-code">merchant_outreach</span></td><td>One row per merchant per offering type: tracks pipeline state</td><td>merchant_id, offering_type, sequence_stage, status, outreach_stage, last_contacted_at</td></tr>
+                <tr><td><span class="sys-code">email_events</span></td><td>Resend webhook events (sent, delivered, opened, clicked, bounced)</td><td>resend_email_id, event_type, recipient, subject, occurred_at</td></tr>
+                <tr><td><span class="sys-code">email_batch_stats</span></td><td>Aggregate stats per send batch</td><td>stage, sent_at, sent_count, delivered, opened, clicked, vertical</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="sys-p">Vertical is derived from email subject where the DB vertical tag is not set. Birthday subjects and classes subjects are mapped to their respective verticals in the dashboard.</p>
+        </div>
+        <div class="sys-section">
+          <div class="sys-h2">Outreach mechanics</div>
+          <p class="sys-p"><strong>Cold emails (Resend):</strong> Sent via Resend from <span class="sys-code">mail.jungle.baby</span>. Webhook events flow into <span class="sys-code">email_events</span> in real time.</p>
+          <p class="sys-p"><strong>Vertical identification:</strong> The <span class="sys-code">offering_type</span> column in <span class="sys-code">merchant_outreach</span> determines which vertical each merchant belongs to (camps, birthdays, classes). Email events are matched to verticals by subject line.</p>
+          <p class="sys-p"><strong>Sequence stages:</strong> Each row in <span class="sys-code">merchant_outreach</span> carries a <span class="sys-code">sequence_stage</span> (which email was last sent) and an <span class="sys-code">outreach_stage</span> (best engagement reached: not_contacted, delivered, opened, clicked).</p>
+          <p class="sys-p"><strong>Response status:</strong> <span class="sys-code">no_response</span>, <span class="sys-code">warm</span>, <span class="sys-code">customer</span>. Wins = warm + customer.</p>
+          <p class="sys-p"><strong>Internal filter:</strong> Events from <span class="sys-code">vaibhav@jungle.baby</span> and <span class="sys-code">jasmit@jungle.baby</span> are always excluded.</p>
+        </div>
+        <div class="sys-section">
+          <div class="sys-h2">Tool stack</div>
+          <div class="tbl-wrap">
+            <table class="sys-table">
+              <thead><tr><th>Tool</th><th>Role</th></tr></thead>
+              <tbody>
+                <tr><td>Supabase (PostgREST)</td><td>Database and read API. Anon key used for SELECT via RLS. Service role key is never stored in any file.</td></tr>
+                <tr><td>Resend</td><td>Email delivery via mail.jungle.baby. Webhooks write to email_events.</td></tr>
+                <tr><td>This dashboard</td><td>Single-file vanilla HTML/JS/CSS. No framework, no build step. Python HTTP server locally, GitHub htmlpreview publicly.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="panelBackdrop" onclick="closePanel()"></div>
+<div id="sidePanel">
+  <div class="panel-head">
+    <div><h3 id="panel-title">Detail</h3><div class="panel-sub" id="panel-sub"></div></div>
+    <button class="panel-close" onclick="closePanel()">x</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<script>
+const SB_URL="https://kewwlnwsxakxubuuflyb.supabase.co";
+const ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtld3dsbndzeGFreHVidXVmbHliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMzMyMzQsImV4cCI6MjA5NjgwOTIzNH0.BGmryPfQRUlX4or3AnlbOqQfiCfnvjOXNP3PGIvsiVo";
+const INTERNAL=new Set(["vaibhav@jungle.baby","jasmit@jungle.baby"]);
+
+/* Subject-based vertical detection — DB vertical column defaults to 'camps',
+   so we derive the true vertical from the email subject line. */
+const BDAY_SUBJECTS=new Set([
+  "the birthday enquiry you're not getting",
+  "parents want one place to book their kid's birthday. that's us.",
+  "one spot left for founding birthday partners",
+  "i'm holding a spot for you",
+  "the thing about birthdays most places miss",
+  "parents book birthdays from whoever they find",
+  "what a good birthday booking is worth to you",
+]);
+const CLASSES_SUBJECTS=new Set([
+  "your camp parents are still looking for you",
+  "want me to add these for you",
+  "what parents do after camp ends",
+  "the classes your camp parents can't find",
+  "parents are looking for you in the wrong places",
+  "want me to just build it",
+  "the search that never lands on you",
+  "built only for parents like yours",
+  "should i close your file",
+  "your camps are live. what about your classes?",
+  "camp season ends, parent searches don't",
+]);
+function subjectToVertical(s){
+  const low=(s||"").toLowerCase();
+  if(BDAY_SUBJECTS.has(low))return"birthdays";
+  if(CLASSES_SUBJECTS.has(low))return"classes";
+  return"camps";
+}
+
+const STAGE_LABELS={
+  "null":"Never contacted","excluded":"Excluded","paused":"Paused",
+  "group_1_sent":"Group 1 sent","group_2_sent":"Group 2 sent","group_3_sent":"Group 3 sent",
+  "day_0_sent":"Day 0","day_3_sent":"Day 3","day_7_sent":"Day 7",
+  "day_10_sent":"Day 10","day_12_sent":"Day 12",
+  "bday_1_sent":"Email 1 sent","bday_2_sent":"Email 2 sent","bday_3_sent":"Email 3 sent",
+  "cls_1_sent":"Email 1 sent","cls_2_sent":"Email 2 sent","cls_3_sent":"Email 3 sent",
+};
+const OUTREACH_ORDER=["not_contacted","contacted","delivered","opened","clicked"];
+const OUTREACH_LABELS={not_contacted:"Not contacted",contacted:"Emailed",delivered:"Delivered",opened:"Opened",clicked:"Clicked"};
+const BADGE={clicked:["green","Clicked"],opened:["brand","Opened"],delivered:["grey","Delivered"],bounced:["red","Bounced"],none:["grey","No activity"]};
+const PAGE_TITLES={overview:"Overview",campaigns:"Email Campaigns",merchants:"Merchant Directory",analytics:"Analytics",templates:"Email Templates",system:"System Docs"};
+const VERT_LABELS={all:"All verticals",camps:"Camps",birthdays:"Birthdays",classes:"Classes"};
+
+let _merchants=[],_events=[],_byEmail={},_byMerchId={};
+let _outreach=[];
+let _batchRows=[];
+let _vertical="all";
+let _mFilter="all",_mSort={col:"name",dir:"asc"};
+let _tplVert="camps",_tplStage="",_tplSeg="a";
+let _currentPage="overview";
+
+/* filtered helpers */
+function fEvts(){return _vertical==="all"?_events:_events.filter(ev=>ev._vert===_vertical);}
+function fOutreach(){return _vertical==="all"?_outreach:_outreach.filter(r=>r.offering_type===_vertical);}
+function fBatch(){
+  const rows=_vertical==="all"?_batchRows:_batchRows.filter(r=>r._vert===_vertical);
+  return rows.reduce((a,r)=>({sent:a.sent+(r.sent_count||0),delivered:a.delivered+(r.delivered||0),opened:a.opened+(r.opened||0),clicked:a.clicked+(r.clicked||0),rows:[...a.rows,r]}),{sent:0,delivered:0,opened:0,clicked:0,rows:[]});
+}
+
+/* outreach engagement summary from outreach_stage (best stage per merchant) */
+function outreachEngagement(rows){
+  const emailed=rows.filter(r=>r.outreach_stage&&r.outreach_stage!=="not_contacted").length;
+  const delivered=rows.filter(r=>["delivered","opened","clicked"].includes(r.outreach_stage)).length;
+  const opened=rows.filter(r=>["opened","clicked"].includes(r.outreach_stage)).length;
+  const clicked=rows.filter(r=>r.outreach_stage==="clicked").length;
+  return{emailed,delivered,opened,clicked};
+}
+
+function setVertical(v){
+  _vertical=v;
+  document.querySelectorAll(".v-btn").forEach(b=>b.classList.toggle("active",b.dataset.v===v));
+  rerenderPage();
+}
+function rerenderPage(){
+  const p=_currentPage;
+  if(p==="overview")renderOverview();
+  else if(p==="campaigns")renderCampaigns();
+  else if(p==="merchants")renderMerchants();
+  else if(p==="analytics")renderAnalytics();
+}
+
+async function sb(path){
+  const r=await fetch(`${SB_URL}/rest/v1/${path}`,{headers:{apikey:ANON,Authorization:`Bearer ${ANON}`}});
+  return{ok:r.ok,status:r.status,body:r.ok?await r.json():await r.text()};
+}
+function el(h){const t=document.createElement("template");t.innerHTML=h.trim();return t.content.firstChild;}
+function esc(s){return(s??"").toString().replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function fmt(ts){if(!ts)return"";return new Date(ts).toLocaleString(undefined,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});}
+function fmtD(ts){if(!ts)return"";return new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}
+function evS(t){return(t||"").replace("email.","");}
+function pct(a,b){return b>0?Math.round(100*a/b)+"%":"n/a";}
+function stageLabel(s){return STAGE_LABELS[s||"null"]||(s||"Unknown");}
+function vchip(v){return`<span class="vchip ${v}">${esc(v)}</span>`;}
+
+function nav(page){
+  _currentPage=page;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add("active");
+  document.getElementById("tb-title").textContent=PAGE_TITLES[page]||page;
+  if(page==="merchants")renderMerchants();
+  else if(page==="campaigns")renderCampaigns();
+  else if(page==="analytics")renderAnalytics();
+  else if(page==="templates")renderTemplates();
+}
+
+async function load(){
+  document.getElementById("banner").innerHTML="";
+  document.getElementById("tb-sub").textContent="Loading...";
+
+  const[mr,or_,er,bsr]=await Promise.all([
+    sb("merchant_crm?select=merchant_id,name,email,category,region&order=name.asc"),
+    sb("merchant_outreach?select=merchant_id,offering_type,sequence_stage,status,outreach_stage,last_contacted_at&limit=2000"),
+    sb("email_events?select=resend_email_id,event_type,recipient,subject,clicked_url,occurred_at&order=occurred_at.desc&limit=5000"),
+    sb("email_batch_stats?select=stage,sent_at,sent_count,delivered,opened,clicked,notes,vertical&order=sent_at.asc"),
+  ]);
+
+  if(!mr.ok){document.getElementById("banner").innerHTML=`<div class="banner err">Could not load merchant_crm (${mr.status})</div>`;return;}
+  _merchants=mr.body;_byEmail={};_byMerchId={};
+  _merchants.forEach(m=>{
+    if(m.email)_byEmail[m.email.trim().toLowerCase()]=m;
+    _byMerchId[m.merchant_id]=m;
+  });
+
+  _outreach=or_.ok?or_.body:[];
+  if(!or_.ok)document.getElementById("banner").innerHTML+=`<div class="banner warn">merchant_outreach unavailable (${or_.status})</div>`;
+
+  let live=false;
+  if(er.ok){
+    _events=er.body
+      .filter(ev=>!INTERNAL.has((ev.recipient||"").trim().toLowerCase()))
+      .map(ev=>({...ev,_vert:subjectToVertical(ev.subject)}));
+    live=true;
+  }else{
+    document.getElementById("banner").innerHTML+=`<div class="banner warn">Engagement data offline (${er.status})</div>`;
+    _events=[];
+  }
+
+  _batchRows=bsr.ok?bsr.body.map(r=>({...r,_vert:r.vertical||"camps"})):[];
+
+  renderOverview();
+  renderTemplates();
+  const now=new Date().toLocaleTimeString();
+  const outCounts=_outreach.reduce((a,r)=>{a[r.offering_type]=(a[r.offering_type]||0)+1;return a;},{});
+  document.getElementById("tb-sub").textContent=`${_merchants.length} merchants total, camps ${outCounts.camps||0}, birthdays ${outCounts.birthdays||0}, classes ${outCounts.classes||0} - updated ${now}`;
+  document.getElementById("sb-footer").textContent=`Updated ${now}`;
+}
+
+/* =================================================================
+   OVERVIEW
+================================================================= */
+function renderOverview(){renderHeroKpis();renderVertStrip();renderFunnel();renderFeed();renderPipeline();}
+
+function renderHeroKpis(){
+  const w=document.getElementById("ov-hero-kpis");w.innerHTML="";
+  const out=fOutreach();
+  const uniqueMerchants=[...new Set(out.map(r=>r.merchant_id))].length;
+  const wins=out.filter(r=>r.status==="warm"||r.status==="customer").length;
+  const contacted=out.filter(r=>r.outreach_stage&&r.outreach_stage!=="not_contacted").length;
+
+  const evts=fEvts();
+  const sent_evts=evts.filter(ev=>evS(ev.event_type)==="sent");
+  const totalSent=sent_evts.length;
+  const totalOpened=evts.filter(ev=>evS(ev.event_type)==="opened").length;
+  const openRate=pct(totalOpened,totalSent);
+  const totalClicked=evts.filter(ev=>evS(ev.event_type)==="clicked").length;
+  const totalDelivered=evts.filter(ev=>evS(ev.event_type)==="delivered").length;
+
+  [{stripe:"grey",eye:"Merchants",num:uniqueMerchants,numCls:"",sub:_vertical==="all"?"across all verticals":VERT_LABELS[_vertical]},
+   {stripe:"",eye:"Emailed",num:contacted,numCls:"",sub:`of ${out.length} in pipeline`},
+   {stripe:"green",eye:"Wins",num:wins,numCls:"green",sub:"warm + customer"},
+   {stripe:"",eye:"Emails sent",num:totalSent||"0",numCls:"",sub:`${totalDelivered} delivered`,drill:totalSent?"sent":null},
+   {stripe:"amber",eye:"Open rate",num:totalSent?openRate:"n/a",numCls:"amber",sub:`${totalOpened} opened, ${totalClicked} clicked`},
+  ].forEach(card=>{
+    const onc=card.drill?` onclick="openDrill('${card.drill}','${esc(card.eye)}')"` :"";
+    w.appendChild(el(`<div class="kpi${card.drill?" clickable":""}"${onc}>
+      <div class="kpi-stripe ${card.stripe}"></div>
+      <div class="kpi-eye">${esc(card.eye)}</div>
+      <div class="kpi-num ${card.numCls}">${card.num}</div>
+      <div class="kpi-sub">${esc(card.sub)}</div>
+      ${card.drill?`<div class="drill-hint">see list</div>`:""}
+    </div>`));
+  });
+}
+
+function renderVertStrip(){
+  const strip=document.getElementById("ov-vert-strip");
+  if(_vertical!=="all"){strip.style.display="none";return;}
+  strip.style.display="";strip.innerHTML="";
+  ["camps","birthdays","classes"].forEach(v=>{
+    const out=_outreach.filter(r=>r.offering_type===v);
+    const wins=out.filter(r=>r.status==="warm"||r.status==="customer").length;
+    const mercs=[...new Set(out.map(r=>r.merchant_id))].length;
+    const evts=_events.filter(ev=>ev._vert===v);
+    const sent=evts.filter(ev=>evS(ev.event_type)==="sent").length;
+    const opened=evts.filter(ev=>evS(ev.event_type)==="opened").length;
+    const isEmpty=out.length===0;
+    const card=el(`<div class="vert-card${isEmpty?" empty":""}">
+      <div class="vert-card-title ${v}">${v.charAt(0).toUpperCase()+v.slice(1)}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div>
+          <div class="kpi-num" style="font-size:28px">${mercs}</div>
+          <div class="kpi-sub">merchants</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:20px;font-weight:800;color:var(--green)">${wins}</div>
+          <div class="kpi-sub">wins</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--muted)">${sent?`${sent} sent, ${opened} opened`:"No emails sent yet"}</div>
+    </div>`);
+    if(!isEmpty)card.onclick=()=>setVertical(v);
+    strip.appendChild(card);
+  });
+}
+
+function renderFunnel(){
+  const card=document.getElementById("funnel-card");card.innerHTML="";
+  const evts=fEvts();
+  const sent=evts.filter(ev=>evS(ev.event_type)==="sent").length;
+
+  if(!sent){
+    /* no email events — show outreach_stage funnel */
+    const out=fOutreach();
+    if(!out.length){card.innerHTML=`<div style="color:var(--muted);font-size:12px">No data yet.</div>`;return;}
+    const total=out.length;
+    const eng=outreachEngagement(out);
+    [["Not contacted",total-eng.emailed,total,""],
+     ["Emailed",eng.emailed,total,""],
+     ["Delivered",eng.delivered,eng.emailed,""],
+     ["Opened",eng.opened,eng.emailed,""],
+     ["Clicked",eng.clicked,eng.emailed,"amber"],
+    ].forEach(([lbl,n,base,cls])=>{
+      const w=base?Math.round(n/base*100):0;
+      card.appendChild(el(`<div class="bar-row">
+        <span class="bar-label">${lbl}</span>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${w}%"></div></div>
+        <span class="bar-n">${n}</span>
+        <span class="bar-pct">${pct(n,base)}</span>
+      </div>`));
+    });
+    return;
+  }
+
+  const delivered=evts.filter(ev=>evS(ev.event_type)==="delivered").length;
+  const opened=evts.filter(ev=>evS(ev.event_type)==="opened").length;
+  const clicked=evts.filter(ev=>evS(ev.event_type)==="clicked").length;
+  const bounced=evts.filter(ev=>evS(ev.event_type)==="bounced").length;
+  [["Sent",sent,sent,""],["Delivered",delivered,sent,""],["Opened",opened,sent,""],["Clicked",clicked,sent,"amber"],["Bounced",bounced,sent,"red"]].forEach(([lbl,n,base,cls])=>{
+    const w=base?Math.round(n/base*100):0;
+    card.appendChild(el(`<div class="bar-row">
+      <span class="bar-label">${lbl}</span>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${w}%"></div></div>
+      <span class="bar-n">${n}</span>
+      <span class="bar-pct">${pct(n,base)}</span>
+    </div>`));
+  });
+}
+
+function renderFeed(){
+  const card=document.getElementById("feed-card");card.innerHTML="";
+  const evts=fEvts();
+  if(!evts.length){card.innerHTML=`<div style="padding:14px;color:var(--muted);font-size:12px">No events yet.</div>`;return;}
+  evts.slice(0,40).forEach(ev=>{
+    const m=_byEmail[(ev.recipient||"").trim().toLowerCase()];
+    const t=evS(ev.event_type);
+    card.appendChild(el(`<div class="feed-item">
+      <div style="display:flex;align-items:center;gap:7px">
+        <span class="ev ${t}">${t}</span>
+        ${ev._vert!=="camps"?vchip(ev._vert):""}
+        <span style="font-size:12px;font-weight:500">${m?esc(m.name):esc(ev.recipient||"n/a")}</span>
+      </div>
+      <span style="font-size:10px;color:var(--muted);white-space:nowrap">${esc(fmt(ev.occurred_at))}</span>
+    </div>`));
+  });
+}
+
+function renderPipeline(){
+  const w=document.getElementById("pipeline-row");w.innerHTML="";
+  const out=fOutreach();
+  if(!out.length){w.innerHTML=`<div class="banner warn" style="margin:0">No sequence data yet${_vertical!=="all"?" for "+VERT_LABELS[_vertical]:""}.`;return;}
+
+  if(_vertical==="all"||_vertical==="camps"){
+    /* show sequence_stage breakdown */
+    const campsOut=_vertical==="all"?_outreach.filter(r=>r.offering_type==="camps"):out;
+    const counts={};
+    campsOut.forEach(r=>{const k=r.sequence_stage||"null";counts[k]=(counts[k]||0)+1;});
+    const knownOrder=["null","group_1_sent","group_2_sent","group_3_sent","day_0_sent","day_3_sent","day_7_sent","day_10_sent","day_12_sent","excluded","paused"];
+    const allKeys=[...new Set([...knownOrder,...Object.keys(counts)])];
+    if(_vertical==="all"){
+      /* also show birthday + classes summaries */
+      const bdayOut=_outreach.filter(r=>r.offering_type==="birthdays");
+      const clsOut=_outreach.filter(r=>r.offering_type==="classes");
+      w.appendChild(el(`<div class="kpi" style="border-top:3px solid var(--jungle-dark);padding-top:15px">
+        <div class="kpi-eye" style="color:var(--jungle-dark)">Camps pipeline</div>
+        <div style="margin-top:8px">${allKeys.filter(k=>counts[k]).map(k=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">${stageLabel(k)}</span><span style="font-weight:700">${counts[k]}</span></div>`).join("")}</div>
+      </div>`));
+      const bdayEng=outreachEngagement(bdayOut);
+      w.appendChild(el(`<div class="kpi" style="border-top:3px solid var(--amber);padding-top:15px">
+        <div class="kpi-eye" style="color:#92400E">Birthdays pipeline</div>
+        <div style="margin-top:8px">
+          ${[["Not contacted",bdayOut.length-bdayEng.emailed],["Emailed",bdayEng.emailed],["Delivered",bdayEng.delivered],["Opened",bdayEng.opened],["Clicked",bdayEng.clicked]].map(([l,n])=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">${l}</span><span style="font-weight:700">${n}</span></div>`).join("")}
+        </div>
+      </div>`));
+      w.appendChild(el(`<div class="kpi" style="border-top:3px solid var(--purple);padding-top:15px">
+        <div class="kpi-eye" style="color:var(--purple)">Classes pipeline</div>
+        <div style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Loaded</span><span style="font-weight:700">${clsOut.length}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0"><span style="color:var(--muted)">Not contacted</span><span style="font-weight:700">${clsOut.filter(r=>r.outreach_stage==="not_contacted"||!r.outreach_stage).length}</span></div>
+        </div>
+      </div>`));
+    } else {
+      allKeys.filter(k=>counts[k]).forEach(k=>{
+        w.appendChild(el(`<div class="kpi">
+          <div class="kpi-stripe grey"></div>
+          <div class="kpi-eye">${esc(stageLabel(k))}</div>
+          <div class="kpi-num" style="font-size:28px">${counts[k]}</div>
+        </div>`));
+      });
+    }
+  } else if(_vertical==="birthdays"){
+    const eng=outreachEngagement(out);
+    const total=out.length;
+    [["Not contacted",total-eng.emailed,"grey"],["Email 1 sent",eng.emailed,"amber"],["Delivered",eng.delivered,""],["Opened",eng.opened,""],["Clicked",eng.clicked,"green"]].forEach(([lbl,n,stripe])=>{
+      w.appendChild(el(`<div class="kpi">
+        <div class="kpi-stripe ${stripe}"></div>
+        <div class="kpi-eye">${esc(lbl)}</div>
+        <div class="kpi-num" style="font-size:28px">${n}</div>
+      </div>`));
+    });
+  } else {
+    /* classes */
+    const nc=out.filter(r=>!r.outreach_stage||r.outreach_stage==="not_contacted").length;
+    w.appendChild(el(`<div class="kpi"><div class="kpi-stripe purple"></div><div class="kpi-eye">Loaded</div><div class="kpi-num" style="font-size:28px">${out.length}</div><div class="kpi-sub">merchants in pipeline</div></div>`));
+    w.appendChild(el(`<div class="kpi"><div class="kpi-stripe grey"></div><div class="kpi-eye">Not contacted</div><div class="kpi-num" style="font-size:28px">${nc}</div><div class="kpi-sub">emails not sent yet</div></div>`));
+  }
+}
+
+/* =================================================================
+   CAMPAIGNS
+================================================================= */
+function renderCampaigns(){
+  const grid=document.getElementById("camp-grid");grid.innerHTML="";
+
+  if(_vertical==="classes"){
+    grid.innerHTML=`<div class="banner warn" style="grid-column:1/-1">No emails sent yet for Classes. Merchant list is loaded and ready.</div>`;
+    return;
+  }
+
+  if(_vertical==="birthdays"||_vertical==="all"){
+    const bdayEvts=_events.filter(ev=>ev._vert==="birthdays");
+    if(bdayEvts.length){
+      /* Cluster by sent-event dates only — gap >= 2 days = new batch.
+         Then aggregate all event types per recipient set so delivered/opened/clicked
+         are counted regardless of when those events came in. */
+      const sentByDate={};
+      bdayEvts.filter(ev=>evS(ev.event_type)==="sent").forEach(ev=>{
+        const d=(ev.occurred_at||"").slice(0,10);if(!d)return;
+        if(!sentByDate[d])sentByDate[d]=[];
+        sentByDate[d].push((ev.recipient||"").toLowerCase());
+      });
+      const sentDates=Object.keys(sentByDate).sort();
+      const batches=[];let cur=null;
+      sentDates.forEach((d,i)=>{
+        const prev=sentDates[i-1];
+        const gap=prev?(new Date(d)-new Date(prev))/86400000:99;
+        if(!cur||gap>=2){cur={start:d,end:d,recipients:new Set()};batches.push(cur);}
+        cur.end=d;sentByDate[d].forEach(r=>cur.recipients.add(r));
+      });
+      batches.forEach((b,i)=>{
+        const bEvts=bdayEvts.filter(ev=>b.recipients.has((ev.recipient||"").toLowerCase()));
+        const uniq=t=>new Set(bEvts.filter(ev=>evS(ev.event_type)===t).map(ev=>(ev.recipient||"").toLowerCase())).size;
+        const s=b.recipients.size;
+        const dv=uniq("delivered");
+        const o=uniq("opened");
+        const c=uniq("clicked");
+        const label=b.start===b.end?fmtD(b.start):`${fmtD(b.start)} to ${fmtD(b.end)}`;
+        grid.appendChild(el(`<div class="camp-card bday">
+          <div class="camp-stage">${vchip("birthdays")} Email batch ${i+1}</div>
+          <div class="camp-date">${label}</div>
+          <div class="camp-n">${s}</div><div class="camp-nl">emails sent</div>
+          <div class="camp-divider"></div>
+          <div class="bar-row"><span class="bar-label">Delivered</span><div class="bar-track"><div class="bar-fill" style="width:${s?Math.round(dv/s*100):0}%"></div></div><span class="bar-n">${dv}</span><span class="bar-pct">${pct(dv,s)}</span></div>
+          <div class="bar-row"><span class="bar-label">Opened</span><div class="bar-track"><div class="bar-fill" style="width:${s?Math.round(o/s*100):0}%"></div></div><span class="bar-n">${o}</span><span class="bar-pct">${pct(o,s)}</span></div>
+          <div class="bar-row"><span class="bar-label">Clicked</span><div class="bar-track"><div class="bar-fill amber" style="width:${s?Math.round(c/s*100):0}%"></div></div><span class="bar-n">${c}</span><span class="bar-pct">${pct(c,s)}</span></div>
+        </div>`));
+      });
+    }
+  }
+
+  if(_vertical==="camps"||_vertical==="all"){
+    const batch=fBatch();
+    if(batch.rows.length){
+      batch.rows.forEach((r,i)=>{
+        const s=r.sent_count||0,d=r.delivered||0,o=r.opened||0,c=r.clicked||0;
+        const alt=i%2===1;
+        grid.appendChild(el(`<div class="camp-card${alt?" alt":""}">
+          <div class="camp-stage">${esc(r.stage||"")}</div>
+          <div class="camp-date">${esc(fmtD(r.sent_at))}</div>
+          ${r.notes?`<div class="camp-subject">${esc(r.notes)}</div>`:""}
+          <div class="camp-n">${s}</div><div class="camp-nl">emails sent</div>
+          <div class="camp-divider"></div>
+          <div class="bar-row"><span class="bar-label">Delivered</span><div class="bar-track"><div class="bar-fill" style="width:${s?Math.round(d/s*100):0}%"></div></div><span class="bar-n">${d}</span><span class="bar-pct">${pct(d,s)}</span></div>
+          <div class="bar-row"><span class="bar-label">Opened</span><div class="bar-track"><div class="bar-fill" style="width:${s?Math.round(o/s*100):0}%"></div></div><span class="bar-n">${o}</span><span class="bar-pct">${pct(o,s)}</span></div>
+          <div class="bar-row"><span class="bar-label">Clicked</span><div class="bar-track"><div class="bar-fill amber" style="width:${s?Math.round(c/s*100):0}%"></div></div><span class="bar-n">${c}</span><span class="bar-pct">${pct(c,s)}</span></div>
+        </div>`));
+      });
+    }
+  }
+
+  if(!grid.children.length)grid.innerHTML=`<div class="banner warn">No campaign data yet${_vertical!=="all"?" for "+VERT_LABELS[_vertical]:""}.`;
+}
+
+/* =================================================================
+   MERCHANTS
+================================================================= */
+function getMerchEng(evts){
+  const map={};
+  evts.forEach(ev=>{
+    const k=(ev.recipient||"").trim().toLowerCase();if(!k)return;
+    if(!map[k])map[k]={clicked:false,opened:false,delivered:false,bounced:false,lastDate:null};
+    const t=evS(ev.event_type);
+    if(t==="clicked")map[k].clicked=true;if(t==="opened")map[k].opened=true;
+    if(t==="delivered")map[k].delivered=true;if(t==="bounced")map[k].bounced=true;
+    if(!map[k].lastDate||new Date(ev.occurred_at)>new Date(map[k].lastDate))map[k].lastDate=ev.occurred_at;
+  });
+  return map;
+}
+function engSt(e){if(!e)return"none";if(e.clicked)return"clicked";if(e.opened)return"opened";if(e.delivered)return"delivered";if(e.bounced)return"bounced";return"none";}
+
+function renderMerchants(){
+  const eng=getMerchEng(fEvts());
+  const search=(document.getElementById("merch-search")?.value||"").toLowerCase();
+  if(_vertical==="all")renderMerchantsAll(eng,search);
+  else renderMerchantsVertical(eng,search);
+}
+
+function renderMerchantsAll(eng,search){
+  const ftabs=document.getElementById("merch-ftabs");ftabs.innerHTML="";
+  const totals={all:0,clicked:0,opened:0,delivered:0,bounced:0,none:0};
+  const byMerch={};
+  _outreach.forEach(r=>{
+    if(!byMerch[r.merchant_id])byMerch[r.merchant_id]=[];
+    byMerch[r.merchant_id].push(r);
+  });
+  Object.keys(byMerch).forEach(mid=>{
+    const m=_byMerchId[mid];if(!m)return;
+    const k=(m.email||"").trim().toLowerCase();
+    const st=engSt(eng[k]||null);
+    totals.all++;totals[st]++;
+  });
+  /* vertical jump chips */
+  const vCounts={camps:0,birthdays:0,classes:0};
+  _outreach.forEach(r=>{if(vCounts[r.offering_type]!==undefined)vCounts[r.offering_type]++;});
+  const vRow=document.getElementById("merch-vert-row");vRow.innerHTML="";
+  [{v:"camps",label:"Camps",col:"var(--jungle)"},{v:"birthdays",label:"Birthdays",col:"var(--amber)"},{v:"classes",label:"Classes",col:"var(--purple)"}].forEach(({v,label,col})=>{
+    const chip=el(`<button style="border:1.5px solid ${col};background:transparent;color:${col};border-radius:var(--r-sm);padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">${label} <span style="font-weight:400;opacity:.8">${vCounts[v]} merchants</span></button>`);
+    chip.onclick=()=>setVertical(v);
+    vRow.appendChild(chip);
+  });
+  [{k:"all",l:`All (${totals.all})`},{k:"clicked",l:`Clicked (${totals.clicked})`},{k:"opened",l:`Opened (${totals.opened})`},{k:"delivered",l:`Delivered (${totals.delivered})`},{k:"none",l:`No activity (${totals.none})`}]
+  .forEach(t=>{const b=el(`<button class="ftab${t.k===_mFilter?" active":""}">${esc(t.l)}</button>`);b.onclick=()=>{_mFilter=t.k;renderMerchants();};ftabs.appendChild(b);});
+
+  let rows=Object.entries(byMerch).map(([mid,rs])=>{
+    const m=_byMerchId[mid]||{name:mid,email:"",category:"",region:""};
+    const k=(m.email||"").trim().toLowerCase();
+    const e=eng[k]||null;
+    const verts=[...new Set(rs.map(r=>r.offering_type))];
+    return{m,e,status:engSt(e),verts,outreach:rs};
+  }).filter(r=>{
+    if(_mFilter!=="all"&&r.status!==_mFilter)return false;
+    if(search){const q=(r.m.name||"")+" "+(r.m.email||"")+" "+(r.m.category||"");if(!q.toLowerCase().includes(search))return false;}
+    return true;
+  });
+  rows.sort((a,b)=>{const col=_mSort.col,dir=_mSort.dir;let av,bv;if(col==="status"){const O={clicked:0,opened:1,delivered:2,bounced:3,none:4};av=O[a.status]??5;bv=O[b.status]??5;return dir==="asc"?av-bv:bv-av;}if(col==="last"){av=a.e?.lastDate||"";bv=b.e?.lastDate||"";}else{av=a.m.name||"";bv=b.m.name||"";}return dir==="asc"?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));});
+
+  const wrap=document.getElementById("merch-tbl");
+  if(!rows.length){wrap.innerHTML=`<div class="banner warn" style="margin:0">No merchants match this filter.</div>`;return;}
+  const tbl=el(`<div class="tbl-wrap"><table><thead><tr>
+    <th class="sort" data-col="name">Merchant</th>
+    <th>Verticals</th><th>Category</th>
+    <th class="sort" data-col="status">Engagement</th>
+    <th class="sort" data-col="last">Last activity</th>
+  </tr></thead><tbody></tbody></table></div>`);
+  tbl.querySelectorAll("th.sort").forEach(th=>{const c=th.dataset.col;if(c===_mSort.col)th.classList.add(_mSort.dir);th.onclick=()=>{_mSort={col:c,dir:_mSort.col===c&&_mSort.dir==="asc"?"desc":"asc"};renderMerchants();};});
+  const tb=tbl.querySelector("tbody");
+  rows.forEach(({m,e,status,verts})=>{
+    const[bc,bl]=BADGE[status]||["grey","n/a"];
+    const row=el(`<tr>
+      <td><div class="td-p">${esc(m.name||"n/a")}</div><div class="td-s">${esc(m.email||"")}</div></td>
+      <td>${verts.map(v=>vchip(v)).join("")||`<span style="color:var(--muted);font-size:10px">none</span>`}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(m.category||"n/a")}</td>
+      <td><span class="badge ${bc}">${bl}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${esc(e?.lastDate?fmt(e.lastDate):"n/a")}</td>
+    </tr>`);
+    row.style.cursor="pointer";row.onclick=()=>openMerchant(m,e);tb.appendChild(row);
+  });
+  wrap.innerHTML="";wrap.appendChild(tbl);
+}
+
+function renderMerchantsVertical(eng,search){
+  document.getElementById("merch-vert-row").innerHTML="";
+  const ftabs=document.getElementById("merch-ftabs");ftabs.innerHTML="";
+  const out=fOutreach();
+  const totals={all:out.length,clicked:0,opened:0,delivered:0,none:0,warm:0,customer:0};
+  out.forEach(r=>{
+    const m=_byMerchId[r.merchant_id];if(!m)return;
+    const k=(m.email||"").trim().toLowerCase();
+    const st=engSt(eng[k]||null);
+    if(totals[st]!==undefined)totals[st]++;
+    if(r.status==="warm")totals.warm++;if(r.status==="customer")totals.customer++;
+  });
+  [{k:"all",l:`All (${totals.all})`},{k:"clicked",l:`Clicked (${totals.clicked})`},{k:"opened",l:`Opened (${totals.opened})`},{k:"warm",l:`Warm (${totals.warm})`},{k:"customer",l:`Customer (${totals.customer})`},{k:"none",l:`No activity (${totals.none})`}]
+  .forEach(t=>{const b=el(`<button class="ftab${t.k===_mFilter?" active":""}">${esc(t.l)}</button>`);b.onclick=()=>{_mFilter=t.k;renderMerchants();};ftabs.appendChild(b);});
+
+  let rows=out.map(r=>{
+    const m=_byMerchId[r.merchant_id]||{name:r.merchant_id,email:"",category:"",region:""};
+    const k=(m.email||"").trim().toLowerCase();
+    const e=eng[k]||null;
+    return{m,r,e,status:engSt(e)};
+  }).filter(row=>{
+    if(_mFilter==="warm")return row.r.status==="warm";
+    if(_mFilter==="customer")return row.r.status==="customer";
+    if(_mFilter!=="all"&&row.status!==_mFilter)return false;
+    if(search){const q=(row.m.name||"")+" "+(row.m.email||"")+" "+(row.m.category||"");if(!q.toLowerCase().includes(search))return false;}
+    return true;
+  });
+  rows.sort((a,b)=>{const col=_mSort.col,dir=_mSort.dir;let av,bv;if(col==="status"){const O={clicked:0,opened:1,delivered:2,none:3};av=O[a.status]??4;bv=O[b.status]??4;return dir==="asc"?av-bv:bv-av;}if(col==="stage"){av=a.r.sequence_stage||"";bv=b.r.sequence_stage||"";}else if(col==="last"){av=a.r.last_contacted_at||"";bv=b.r.last_contacted_at||"";}else{av=a.m.name||"";bv=b.m.name||"";}return dir==="asc"?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));});
+
+  const wrap=document.getElementById("merch-tbl");
+  if(!rows.length){wrap.innerHTML=`<div class="banner warn" style="margin:0">No merchants match.</div>`;return;}
+  const tbl=el(`<div class="tbl-wrap"><table><thead><tr>
+    <th class="sort" data-col="name">Merchant</th>
+    <th class="sort" data-col="stage">Stage</th>
+    <th>Response</th><th>Category</th>
+    <th class="sort" data-col="status">Email engagement</th>
+    <th class="sort" data-col="last">Last contacted</th>
+  </tr></thead><tbody></tbody></table></div>`);
+  tbl.querySelectorAll("th.sort").forEach(th=>{const c=th.dataset.col;if(c===_mSort.col)th.classList.add(_mSort.dir);th.onclick=()=>{_mSort={col:c,dir:_mSort.col===c&&_mSort.dir==="asc"?"desc":"asc"};renderMerchants();};});
+  const tb=tbl.querySelector("tbody");
+  rows.forEach(({m,r,e,status})=>{
+    const[bc,bl]=BADGE[status]||["grey","n/a"];
+    const stageKey=r.sequence_stage||"null";
+    const resp=r.status==="customer"?`<span class="badge green">Customer</span>`:r.status==="warm"?`<span class="badge amber">Warm</span>`:`<span class="badge grey">No reply</span>`;
+    const row=el(`<tr>
+      <td><div class="td-p">${esc(m.name||"n/a")}</div><div class="td-s">${esc(m.email||"")}</div></td>
+      <td><span class="chip ${stageKey==="null"?"none":stageKey==="excluded"?"excl":""}">${esc(stageLabel(stageKey))}</span></td>
+      <td>${resp}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(m.category||"n/a")}</td>
+      <td><span class="badge ${bc}">${bl}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${esc(r.last_contacted_at?fmtD(r.last_contacted_at):"n/a")}</td>
+    </tr>`);
+    row.style.cursor="pointer";row.onclick=()=>openMerchant(m,e);tb.appendChild(row);
+  });
+  wrap.innerHTML="";wrap.appendChild(tbl);
+}
+
+/* =================================================================
+   ANALYTICS
+================================================================= */
+function renderAnalytics(){
+  renderTrendChart();renderCategoryChart();
+  const evts=fEvts();
+  const sent=evts.filter(ev=>evS(ev.event_type)==="sent").length;
+  const delivered=evts.filter(ev=>evS(ev.event_type)==="delivered").length;
+  const opened=evts.filter(ev=>evS(ev.event_type)==="opened").length;
+  const clicked=evts.filter(ev=>evS(ev.event_type)==="clicked").length;
+  const bounced=evts.filter(ev=>evS(ev.event_type)==="bounced").length;
+
+  const af=document.getElementById("a-funnel");af.innerHTML="";
+  if(sent){
+    [["Sent",sent,sent,""],["Delivered",delivered,sent,""],["Opened",opened,sent,""],["Clicked",clicked,sent,"amber"],["Bounced",bounced,sent,"red"]].forEach(([lbl,n,base,cls])=>{
+      const w=base?Math.round(n/base*100):0;
+      af.appendChild(el(`<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">${lbl}</span>
+          <span style="font-size:12px;font-weight:700">${n} <span style="font-size:10px;font-weight:400;color:var(--muted)">${pct(n,base)}</span></span>
+        </div>
+        <div class="bar-track" style="height:9px"><div class="bar-fill ${cls}" style="width:${w}%"></div></div>
+      </div>`));
+    });
+  }else{af.innerHTML=`<div style="color:var(--muted);font-size:12px">No email events yet.</div>`;}
+
+  const ac=document.getElementById("a-camps");ac.innerHTML="";
+  const batch=fBatch();
+  if(batch.rows.length){
+    batch.rows.forEach(r=>{
+      const s=r.sent_count||0;
+      ac.appendChild(el(`<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--jungle-dark)">${esc(r.stage||"")} ${r._vert&&r._vert!=="camps"?vchip(r._vert):""}</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:7px">${esc(fmtD(r.sent_at))} - ${s} sent</div>
+        <div class="bar-row"><span class="bar-label">Open rate</span><div class="bar-track"><div class="bar-fill" style="width:${s?Math.round((r.opened||0)/s*100):0}%"></div></div><span class="bar-pct">${pct(r.opened,s)}</span></div>
+        <div class="bar-row"><span class="bar-label">Click rate</span><div class="bar-track"><div class="bar-fill amber" style="width:${s?Math.round((r.clicked||0)/s*100):0}%"></div></div><span class="bar-pct">${pct(r.clicked,s)}</span></div>
+      </div>`));
+    });
+  }else{ac.innerHTML=`<div style="color:var(--muted);font-size:12px">No batch stats yet.</div>`;}
+
+  const eng=getMerchEng(evts);
+  const topRows=Object.entries(eng).filter(([,e])=>e.clicked||e.opened).map(([email,e])=>({m:_byEmail[email]||null,email,e})).sort((a,b)=>(b.e.clicked?2:1)-(a.e.clicked?2:1)).slice(0,15);
+  const at=document.getElementById("a-top");
+  if(!topRows.length){at.innerHTML=`<div class="banner warn">No engagement data yet.</div>`;return;}
+  const tbl=el(`<div class="tbl-wrap"><table><thead><tr><th>Merchant</th><th>Category</th><th>Status</th><th>Last active</th></tr></thead><tbody></tbody></table></div>`);
+  const tb=tbl.querySelector("tbody");
+  topRows.forEach(({m,email,e})=>{const st=engSt(e);const[bc,bl]=BADGE[st]||["grey","n/a"];tb.appendChild(el(`<tr><td><div class="td-p">${esc(m?.name||email)}</div><div class="td-s">${esc(email)}</div></td><td style="font-size:11px;color:var(--muted)">${esc(m?.category||"n/a")}</td><td><span class="badge ${bc}">${bl}</span></td><td style="font-size:11px;color:var(--muted)">${esc(fmt(e.lastDate))}</td></tr>`));});
+  at.innerHTML="";at.appendChild(tbl);
+}
+
+function renderTrendChart(){
+  const c=document.getElementById("a-trend");if(!c)return;
+  const evts=fEvts();
+  const byDate={};
+  evts.forEach(ev=>{const t=evS(ev.event_type);if(t!=="opened"&&t!=="clicked")return;const d=(ev.occurred_at||"").slice(0,10);if(!d)return;if(!byDate[d])byDate[d]={opened:0,clicked:0};byDate[d][t]++;});
+  const dates=Object.keys(byDate).sort();
+  if(dates.length<2){c.innerHTML=`<div style="color:var(--muted);font-size:12px;padding:4px 0">Not enough data yet.</div>`;return;}
+  const minD=new Date(dates[0]+"T12:00:00Z"),maxD=new Date(dates[dates.length-1]+"T12:00:00Z");
+  const span=(maxD-minD)/86400000||1;
+  const opens=dates.map(d=>byDate[d].opened||0),clicks=dates.map(d=>byDate[d].clicked||0);
+  const maxV=Math.max(...opens,...clicks,1);
+  const W=900,H=220,P={t:20,r:24,b:44,l:38};
+  const cW=W-P.l-P.r,cH=H-P.t-P.b;
+  const xP=d=>P.l+((new Date(d+"T12:00:00Z")-minD)/86400000/span)*cW;
+  const yP=v=>P.t+cH-(v/maxV)*cH;
+  const lp=vals=>dates.map((d,i)=>`${i===0?"M":"L"}${xP(d).toFixed(1)},${yP(vals[i]).toFixed(1)}`).join(" ");
+  const ap=vals=>{const base=P.t+cH;return lp(vals)+` L${xP(dates[dates.length-1]).toFixed(1)},${base} L${xP(dates[0]).toFixed(1)},${base} Z`;};
+  const grid=Array.from({length:5},(_,i)=>{const v=Math.round((i/4)*maxV);const y=yP(v);return`<line x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}" stroke="#E5EAE7" stroke-width="1"/><text x="${P.l-5}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#6B7A6F">${v}</text>`;}).join("");
+  const every=Math.max(1,Math.ceil(dates.length/8));
+  const xlbls=dates.filter((_,i)=>i%every===0||i===dates.length-1).map(d=>{const lb=new Date(d+"T12:00:00Z").toLocaleDateString("en-SG",{month:"short",day:"numeric"});return`<text x="${xP(d).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="#6B7A6F">${lb}</text>`;}).join("");
+  const oDots=dates.map((d,i)=>opens[i]>0?`<circle cx="${xP(d).toFixed(1)}" cy="${yP(opens[i]).toFixed(1)}" r="3" fill="#2F6B4F" stroke="white" stroke-width="1.5"/>`:""  ).join("");
+  const cDots=dates.map((d,i)=>clicks[i]>0?`<circle cx="${xP(d).toFixed(1)}" cy="${yP(clicks[i]).toFixed(1)}" r="3.5" fill="#D97706" stroke="white" stroke-width="1.5"/>`:"").join("");
+  c.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="display:flex;gap:18px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500"><span style="width:14px;height:2.5px;background:#2F6B4F;display:inline-block;border-radius:2px;vertical-align:middle"></span>Opens</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500"><span style="width:14px;height:2.5px;background:#D97706;display:inline-block;border-radius:2px;vertical-align:middle"></span>Clicks</div>
+    </div>
+    <span style="font-size:10px;color:var(--muted)">${dates[0]} to ${dates[dates.length-1]}</span>
+  </div>
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;overflow:visible">
+    <defs>
+      <linearGradient id="gO" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2F6B4F" stop-opacity="0.15"/><stop offset="100%" stop-color="#2F6B4F" stop-opacity="0.01"/></linearGradient>
+      <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D97706" stop-opacity="0.22"/><stop offset="100%" stop-color="#D97706" stop-opacity="0.01"/></linearGradient>
+    </defs>
+    ${grid}<path d="${ap(opens)}" fill="url(#gO)"/><path d="${ap(clicks)}" fill="url(#gC)"/>
+    <path d="${lp(opens)}" fill="none" stroke="#2F6B4F" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="${lp(clicks)}" fill="none" stroke="#D97706" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${oDots}${cDots}${xlbls}
+  </svg>`;
+}
+
+function renderCategoryChart(){
+  const c=document.getElementById("a-category");if(!c)return;
+  const eng=getMerchEng(fEvts());
+  const byCat={};
+  _merchants.forEach(m=>{
+    const k=(m.email||"").trim().toLowerCase();const e=eng[k]||null;if(!e)return;
+    const cat=m.category||"Uncategorised";
+    if(!byCat[cat])byCat[cat]={total:0,opened:0,clicked:0};
+    byCat[cat].total++;if(e.opened||e.clicked)byCat[cat].opened++;if(e.clicked)byCat[cat].clicked++;
+  });
+  const cats=Object.entries(byCat).filter(([,v])=>v.total>=1).sort((a,b)=>(b[1].opened/b[1].total)-(a[1].opened/a[1].total));
+  if(!cats.length){c.innerHTML=`<div style="color:var(--muted);font-size:12px">No category data yet.</div>`;return;}
+  const BAR=20,GAP=14,LW=160,PL=LW+12,PR=56,PT=10,PB=32,W=820;
+  const chartW=W-PL-PR,chartH=cats.length*(BAR+GAP),H=PT+chartH+PB;
+  const xP=p=>PL+(p/100)*chartW;
+  const grid=[0,25,50,75,100].map(v=>{const x=xP(v);return`<line x1="${x}" y1="${PT-4}" x2="${x}" y2="${PT+chartH}" stroke="#E5EAE7" stroke-width="1"/><text x="${x}" y="${H-8}" text-anchor="middle" font-size="9" fill="#6B7A6F">${v}%</text>`;}).join("");
+  const bars=cats.map(([cat,v],i)=>{const op=v.total?v.opened/v.total*100:0;const cl=v.total?v.clicked/v.total*100:0;const y=PT+i*(BAR+GAP);return`<text x="${PL-8}" y="${(y+BAR/2+4).toFixed(1)}" text-anchor="end" font-size="11" fill="#1A2E22">${esc(cat)}</text><rect x="${PL}" y="${y}" width="${chartW}" height="${BAR}" rx="3" fill="#E5EAE7"/><rect x="${PL}" y="${y}" width="${((op/100)*chartW).toFixed(1)}" height="${BAR}" rx="3" fill="#2F6B4F" opacity="0.5"/><rect x="${PL}" y="${(y+BAR*0.22).toFixed(1)}" width="${((cl/100)*chartW).toFixed(1)}" height="${(BAR*0.56).toFixed(1)}" rx="2" fill="#D97706"/><text x="${(xP(op)+5).toFixed(1)}" y="${(y+BAR/2+4).toFixed(1)}" font-size="10" fill="#6B7A6F">${Math.round(op)}%</text>`;}).join("");
+  c.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div style="display:flex;gap:18px"><div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500"><span style="width:14px;height:10px;background:#2F6B4F;opacity:.5;display:inline-block;border-radius:2px;vertical-align:middle"></span>Opened</div><div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500"><span style="width:14px;height:6px;background:#D97706;display:inline-block;border-radius:2px;vertical-align:middle"></span>Clicked</div></div><span style="font-size:10px;color:var(--muted)">% of merchants reached per category</span></div><div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:420px;height:auto;display:block">${grid}${bars}</svg></div>`;
+}
+
+/* =================================================================
+   PANELS
+================================================================= */
+function openDrill(type,title){
+  const evts=fEvts().filter(ev=>evS(ev.event_type)===type);
+  const rows=[...evts].sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at));
+  document.getElementById("panel-title").textContent=title;
+  document.getElementById("panel-sub").textContent=`${rows.length} events`;
+  const body=document.getElementById("panel-body");body.innerHTML="";
+  if(!rows.length){body.innerHTML=`<div style="padding:16px;color:var(--muted);font-size:12px">No events yet.</div>`;openPanel();return;}
+  const t=el(`<table><thead><tr><th>Merchant</th><th>Vertical</th><th>Subject</th><th>Date</th></tr></thead><tbody></tbody></table>`);
+  const tb=t.querySelector("tbody");
+  rows.forEach(ev=>{const k=(ev.recipient||"").trim().toLowerCase();const m=_byEmail[k];tb.appendChild(el(`<tr><td><div class="td-p">${m?esc(m.name):`<span style="color:var(--muted)">${esc(ev.recipient||"n/a")}</span>`}</div>${m?`<div class="td-s">${esc(ev.recipient||"")}</div>`:""}</td><td>${vchip(ev._vert||"camps")}</td><td style="font-size:11px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(ev.subject||"")}">${esc(ev.subject||"n/a")}</td><td style="font-size:11px;color:var(--muted);white-space:nowrap">${esc(fmt(ev.occurred_at))}</td></tr>`));});
+  body.appendChild(t);openPanel();
+}
+
+function openMerchant(m,eng){
+  document.getElementById("panel-title").textContent=m.name||m.email||"Merchant";
+  document.getElementById("panel-sub").textContent=m.email||"";
+  const body=document.getElementById("panel-body");body.innerHTML="";
+  const st=engSt(eng);const[bc,bl]=BADGE[st]||["grey","n/a"];
+  const seqs=_outreach.filter(r=>r.merchant_id===m.merchant_id);
+  body.appendChild(el(`<div class="m-meta">
+    <div class="m-chips">
+      ${m.category?`<span class="badge grey">${esc(m.category)}</span>`:""}
+      ${m.region?`<span class="badge grey">${esc(m.region)}</span>`:""}
+      <span class="badge ${bc}">${bl}</span>
+    </div>
+    ${seqs.length?`<div style="margin-top:10px">${seqs.map(s=>`<div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">${vchip(s.offering_type)}<span class="chip ${s.sequence_stage?"":""}">${esc(stageLabel(s.sequence_stage))}</span>${s.status==="customer"?`<span class="badge green">Customer</span>`:s.status==="warm"?`<span class="badge amber">Warm</span>`:""}<span style="font-size:10px;color:var(--muted)">${OUTREACH_LABELS[s.outreach_stage]||s.outreach_stage||""}</span></div>`).join("")}</div>`:""}
+  </div>`));
+  const k=(m.email||"").trim().toLowerCase();
+  const evts=_events.filter(ev=>(ev.recipient||"").trim().toLowerCase()===k).sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at));
+  if(!evts.length){body.appendChild(el(`<div style="padding:16px;color:var(--muted);font-size:12px">No email events for this merchant yet.</div>`));}
+  else{
+    const t=el(`<table><thead><tr><th>Event</th><th>Vertical</th><th>Subject</th><th>Date</th></tr></thead><tbody></tbody></table>`);
+    const tb=t.querySelector("tbody");
+    evts.forEach(ev=>{const evt=evS(ev.event_type);tb.appendChild(el(`<tr><td><span class="ev ${evt}">${evt}</span></td><td>${vchip(ev._vert||"camps")}</td><td style="font-size:11px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(ev.subject||"")}">${esc(ev.subject||"n/a")}</td><td style="font-size:11px;color:var(--muted);white-space:nowrap">${esc(fmt(ev.occurred_at))}</td></tr>`));});
+    body.appendChild(t);
+  }
+  openPanel();
+}
+function openPanel(){document.getElementById("sidePanel").classList.add("open");document.getElementById("panelBackdrop").classList.add("open");}
+function closePanel(){document.getElementById("sidePanel").classList.remove("open");document.getElementById("panelBackdrop").classList.remove("open");}
+
+/* =================================================================
+   TEMPLATES
+================================================================= */
+const SIGNATURE=`Best,
+June
+Digital Sales
+
+Jungle (https://www.jungle.baby/)
+Free Listing: https://partner.jungle.baby/list-business
+Website Builder: https://partner.jungle.baby/
+AI Agent: https://partner.jungle.baby/build-agent
+Free Templates: https://www.jungle.baby/merchant-templates
+
+---
+June is powered by AI and may occasionally generate information that is inaccurate or incomplete. Please verify any details independently before acting on them. Jungle is not responsible for your use of AI-generated information.`;
+
+const CAMPS_TEMPLATES=[
+  {stage:"day_0",label:"Day 0 - Intro",subject:"Singapore parents are looking for camps right now. Is yours listed?",body:`Hi [name] team,
+
+June holidays are still on. In just the past week, over 3,700 Singapore parents saw our ads and 2,400 clicked through looking for camps. The search is still live.
+
+We ran a Facebook campaign to understand what families are looking for this season. Here's what came back:
+
+1. Multi-sports led by a wide margin, followed by coding and STEM, with demand for chess, arts, leadership, and adventure too.
+2. The sweet spot is ages 7 to 12, with solid interest from teen parents as well.
+3. East, Central, and West were the most active regions.
+
+These are real parents, actively looking. If your camp isn't on Jungle, they won't find you.
+
+Get listed now. Reply with a Yes if you would like to get listed and we will set you up.`},
+  {stage:"day_3",label:"Day 3 - Follow-up",subject:"2,000+ parents clicked through looking for camps",body:`Hi [name] team,
+
+Since we launched our campaign, traffic on Jungle is up 50%. That's not impressions. 2,000+ parents clicked through specifically looking for camps to book.
+
+[category_phrase] as one of the categories they asked for directly.
+
+If [name] isn't listed, those parents won't find you. Get listed today. Reply Yes and we'll set you up.`},
+  {stage:"day_7",label:"Day 7 - Follow-up",subject:"Your competitors are already on Jungle",body:`Hi [name] team,
+
+Parents searching for [category_camps_phrase] in your area are finding providers on Jungle right now. A few of them listed before the holidays and are already in front of that audience.
+
+[name] isn't on there yet.
+
+Get listed today. Reply Yes and we'll get you live.`},
+  {stage:"day_10",label:"Day 10 - Follow-up",subject:"Parents are hunting for deals right now",body:`Hi [name] team,
+
+One thing we're seeing clearly: parents are always looking for a discount before they commit. If [name] has one running, let us know and we'll feature it. If not, it might be worth creating something simple for families who are on the fence.
+
+Share your offer and we'll feature it on your Jungle listing, our homepage, and promote it across our social media, blogs, and newsletter. No extra cost.
+
+Reply with your deal and we'll get it live.`},
+  {stage:"day_12",label:"Day 12 - Final",subject:"last one from us",body:`Hi [name] team,
+
+I'll leave it here after this.
+
+Parents are finding camps on Jungle right now. Impressions, Get GungHo, Wolf Camp, Swish Swimming, and Creative Kulture Kids are all listed this season and in front of that audience.
+
+And it's not just holiday camps. Jungle is where parents discover after-school activities, birthday parties, and more year-round. A listing on Jungle keeps [name] visible long after the June window closes.
+
+Whenever you're ready, we're here. https://partner.jungle.baby/`},
+];
+
+const BDAY_TEMPLATES=[
+  {stage:"bday_1",label:"Email 1 - All",subject:"the birthday enquiry you're not getting",body:`Hi [name],
+
+Right now a parent three streets away is scrolling Instagram at 11pm trying to find somewhere to hold their kid's party. They will book someone this week. The only question is whether they ever find you.
+
+We're building the one place in Singapore parents go to discover and book kids birthdays. Venues, packages, hosted sessions, all in one search. We're bringing on founding partners now, and the first ones in get featured when we open it to parents.
+
+If you host birthdays, reply yes and we'll set you up.`},
+  {stage:"bday_2_clicked",label:"Email 2 - Clicked",subject:"I'm holding a spot for you",body:`Hi [name],
+
+You had a look, so I'm holding a founding place for you.
+
+Founding partners get featured placement when we launch, and I'd rather that spot went to you than to whoever fills it next.
+
+Reply yes and it's yours. It stays open a few more days.`},
+  {stage:"bday_2_opened",label:"Email 2 - Opened",subject:"the thing about birthdays most places miss",body:`Hi [name],
+
+I sent a note about listing your birthdays on Jungle and wanted to add the part I think matters most.
+
+Birthdays aren't like a class enquiry. A parent isn't comparing ten options. They've got a date, a child who cares deeply, and a small window to get it right. When they find someone they trust, they book fast and they come back next year.
+
+That's the parent we're bringing to you. Not a browser, a booker.
+
+If hosting birthdays is something you do, reply yes and I'll get you set up as a founding partner.`},
+  {stage:"bday_2_no_open",label:"Email 2 - No open",subject:"parents book birthdays from whoever they find",body:`Hi [name],
+
+When we open birthdays to parents, they'll book from whoever they can find. I'd rather [name] was on that list than watching from outside it.
+
+We're onboarding founding partners this week. Reply yes and you're in before it goes live.`},
+  {stage:"bday_3",label:"Email 3 - Final",subject:"what a good birthday booking is worth to you",body:`Hi [name],
+
+I'll keep this short.
+
+One birthday booking isn't one afternoon. It's the parents who come, see what you do, and remember you for their own kid's party. It's the child who wants to come back for classes. One good birthday tends to bring the next three.
+
+That's why we're building the birthday section carefully, with partners who do it well. I think you're one of them.
+
+If you'd like to be part of it, reply yes and I'll set you up. If the timing's off, no problem at all.`},
+];
+
+const CLASSES_A_TEMPLATES=[
+  {stage:"cls_a_1",label:"Email 1 - All",subject:"your camp parents are still looking for you",body:`Hi [name],
+
+The parents who found you for camps didn't stop being parents when the holidays ended. They're still searching, now for the weekly classes their kids do all year. Swimming, art, coding, music. That demand never switches off.
+
+Your listing is already live. Adding your regular classes means those same parents keep finding you long after camp season.
+
+Reply yes and we will set you up.`},
+  {stage:"cls_a_2_clicked",label:"Email 2 - Clicked",subject:"want me to add these for you",body:`Hi [name],
+
+Saw you took a look. Want me to add your classes to your listing and send it over for you to check?
+
+You reply yes, we set them up for you.
+
+Want me to go ahead?`},
+  {stage:"cls_a_2_opened",label:"Email 2 - Opened",subject:"what parents do after camp ends",body:`Hi [name],
+
+Following up on my note about your classes. Here's what we see.
+
+A parent books a camp, their kid loves it, and then the holidays end and they think "where can they keep doing this every week." Most of the time, they can't find the answer, so the momentum dies.
+
+Your classes are that answer. Being listed means the parent who just discovered you doesn't lose you when camp finishes.
+
+Reply yes and we'll add them.`},
+  {stage:"cls_a_2_no_open",label:"Email 2 - No open",subject:"the classes your camp parents can't find",body:`Hi [name],
+
+The parents who found you for camps are still around. Their kids still want to do the things they loved over the holidays. Right now those parents can't find your weekly classes, because your listing only shows camps.
+
+Adding your classes means the families who already know you keep finding you all year.
+
+Reply yes and we will set you up.`},
+  {stage:"cls_a_3",label:"Email 3 - Final",subject:"should I close your file",body:`Hi [name],
+
+I've reached out a couple of times about getting your classes on Jungle. No worries if it's not for you.
+
+If it is, reply yes and I'll set everything up this week. If I don't hear back, I'll assume the timing's off and leave you be.`},
+];
+
+const CLASSES_B_TEMPLATES=[
+  {stage:"cls_b_1",label:"Email 1 - All",subject:"parents are looking for you in the wrong places",body:`Hi [name],
+
+A parent searching for a kids class in Singapore ends up wading through car ads, tuition centres and adult gyms before they find anything close. Most give up before they reach someone like you.
+
+Jungle is built only for kids activities. Every person on it is looking for exactly what you offer. We build your profile for you.
+
+Reply yes and you're live this week.`},
+  {stage:"cls_b_2_clicked",label:"Email 2 - Clicked",subject:"want me to just build it",body:`Hi [name],
+
+Saw you took a look. Easiest way in: I build your profile and send it over for you to check.
+
+You reply yes, and we can set up an account for you.
+
+Want me to go ahead?`},
+  {stage:"cls_b_2_opened",label:"Email 2 - Opened",subject:"the search that never lands on you",body:`Hi [name],
+
+Every week parents in [region] search for a kids class like yours. Most of them never reach you, because the places they search bury you under everything that isn't a kids class.
+
+Jungle is built for one thing only: parents finding activities for their children. When they search for what you do, you're who they find.
+
+Reply yes to get listed.`},
+  {stage:"cls_b_2_no_open",label:"Email 2 - No open",subject:"built only for parents like yours",body:`Hi [name],
+
+There are plenty of places to list a business. Almost none of them are built for kids activities. Jungle is.
+
+Every single person searching it is a parent looking for something for their child. No noise, no wrong audience, just the families you want.
+
+If that's who you want finding you, reply yes and we'll get you listed.`},
+  {stage:"cls_b_3",label:"Email 3 - Final",subject:"should I close your file",body:`Hi [name],
+
+I've reached out a couple of times about getting your classes on Jungle. No worries if it's not for you.
+
+If it is, reply yes and I'll set everything up this week. If I don't hear back, I'll assume the timing's off and leave you be.`},
+];
+
+function hlPh(body){return esc(body).replace(/\[(.+?)\]/g,(_,n)=>`<span class="ph">[${esc(n)}]</span>`);}
+
+function renderTemplates(){
+  const vertTabs=document.getElementById("tpl-vert-tabs");vertTabs.innerHTML="";
+  [["camps","Camps"],["birthdays","Birthdays"],["classes","Classes"]].forEach(([v,label])=>{
+    const b=el(`<button class="tpl-vert-tab${v===_tplVert?" active":""}">${label}</button>`);
+    b.onclick=()=>{_tplVert=v;_tplStage="";renderTemplates();};vertTabs.appendChild(b);
+  });
+
+  const inner=document.getElementById("tpl-inner");inner.innerHTML="";
+
+  if(_tplVert==="camps"){
+    const activeStage=_tplStage||CAMPS_TEMPLATES[0].stage;
+    const tabsEl=el(`<div class="tpl-tabs"></div>`);
+    CAMPS_TEMPLATES.forEach(t=>{const b=el(`<button class="tpl-tab${t.stage===activeStage?" active":""}">${esc(t.label)}</button>`);b.onclick=()=>{_tplStage=t.stage;renderTemplates();};tabsEl.appendChild(b);});
+    inner.appendChild(tabsEl);
+    const t=CAMPS_TEMPLATES.find(x=>x.stage===activeStage)||CAMPS_TEMPLATES[0];
+    inner.appendChild(el(`<div><div class="tpl-subject">Subject: ${esc(t.subject)}</div><div class="tpl-body" style="margin-top:10px">${hlPh(t.body)}<div class="tpl-sig">${hlPh(SIGNATURE)}</div></div></div>`));
+  }
+
+  if(_tplVert==="birthdays"){
+    const activeStage=_tplStage||BDAY_TEMPLATES[0].stage;
+    const note=el(`<div class="tpl-note">Email 2 varies by what the recipient did with Email 1. Send the clicked variant to those who clicked, the opened variant to those who opened but did not click, and the no-open variant to those who never opened.</div>`);
+    inner.appendChild(note);
+    const tabsEl=el(`<div class="tpl-tabs"></div>`);
+    BDAY_TEMPLATES.forEach(t=>{const b=el(`<button class="tpl-tab${t.stage===activeStage?" active":""}">${esc(t.label)}</button>`);b.onclick=()=>{_tplStage=t.stage;renderTemplates();};tabsEl.appendChild(b);});
+    inner.appendChild(tabsEl);
+    const t=BDAY_TEMPLATES.find(x=>x.stage===activeStage)||BDAY_TEMPLATES[0];
+    inner.appendChild(el(`<div><div class="tpl-subject">Subject: ${esc(t.subject)}</div><div class="tpl-body" style="margin-top:10px">${hlPh(t.body)}<div class="tpl-sig">${hlPh(SIGNATURE)}</div></div></div>`));
+  }
+
+  if(_tplVert==="classes"){
+    const activeSeg=_tplSeg||"a";
+    const segTabsEl=el(`<div class="tpl-seg-tabs"></div>`);
+    [["a","Segment A - Already on Jungle"],["b","Segment B - New merchants"]].forEach(([s,label])=>{
+      const b=el(`<button class="tpl-seg-tab${s===activeSeg?" active":""}">${label}</button>`);
+      b.onclick=()=>{_tplSeg=s;_tplStage="";renderTemplates();};segTabsEl.appendChild(b);
+    });
+    inner.appendChild(segTabsEl);
+    const segNote=activeSeg==="a"
+      ?`<div class="tpl-note">Segment A: merchants who were listed during camp season. They already know Jungle. Goal is to add their weekly classes to their existing listing.</div>`
+      :`<div class="tpl-note">Segment B: merchants not yet on Jungle. Cold outreach. Goal is to get them listed for the first time.</div>`;
+    inner.appendChild(el(segNote));
+    const templates=activeSeg==="a"?CLASSES_A_TEMPLATES:CLASSES_B_TEMPLATES;
+    const activeStage=_tplStage||templates[0].stage;
+    const branchNote=el(`<div class="tpl-note" style="margin-top:8px">Email 2 varies by what the recipient did with Email 1 (clicked / opened / no open).</div>`);
+    inner.appendChild(branchNote);
+    const tabsEl=el(`<div class="tpl-tabs"></div>`);
+    templates.forEach(t=>{const b=el(`<button class="tpl-tab${t.stage===activeStage?" active":""}">${esc(t.label)}</button>`);b.onclick=()=>{_tplStage=t.stage;renderTemplates();};tabsEl.appendChild(b);});
+    inner.appendChild(tabsEl);
+    const t=templates.find(x=>x.stage===activeStage)||templates[0];
+    inner.appendChild(el(`<div><div class="tpl-subject">Subject: ${esc(t.subject)}</div><div class="tpl-body" style="margin-top:10px">${hlPh(t.body)}<div class="tpl-sig">${hlPh(SIGNATURE)}</div></div></div>`));
+  }
+}
+
+load();
+</script>
+</body>
+</html>
